@@ -8,7 +8,8 @@ Modular operations app for Joebros Contracting Services (general contracting, Ke
 
 ## Stack
 - React 19 + TypeScript + Vite, React Router. No UI framework; plain CSS. All colors, type sizes and spacing are tokens in `src/styles/tokens.css` (light, dark, and follow-device themes). Never hardcode a color.
-- Planned: Supabase (Postgres, Auth, Storage) from F3/F4, Resend email, Leaflet + OpenRouteService maps, hosting on Cloudflare Pages. Keep everything on free tiers unless the owner approves a cost.
+- Database: Supabase Postgres. Schema is SQL in `supabase/migrations/` (new file per change, never edit an applied one), sample rows in `supabase/seed.sql` (`is_example = true`). Merging to main applies them via `.github/workflows/database.yml`. Tests run migrations in PGlite (`supabase/tests`). See `supabase/README.md`.
+- Planned: Supabase Auth and Storage (F4+), Resend email, Leaflet + OpenRouteService maps, hosting on Cloudflare Pages. Keep everything on free tiers unless the owner approves a cost.
 
 ## Conventions
 - Each module lives in `src/modules/<id>/index.tsx` and exports a `ModuleDefinition` (see `src/core/modules.ts`). Register it in `src/modules/registry.ts`; menu and routes are generated from the registry.
