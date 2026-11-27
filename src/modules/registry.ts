@@ -7,6 +7,7 @@ import { onsiteModule } from "./onsite";
 import { reviewModule } from "./review";
 import { invoicingModule } from "./invoicing";
 import { settingsModule } from "./settings";
+import { styleguideModule } from "./styleguide";
 
 /** Every module in the app. Add new modules here; menu and routes follow automatically. */
 export const MODULES: readonly ModuleDefinition[] = [
@@ -18,6 +19,7 @@ export const MODULES: readonly ModuleDefinition[] = [
   reviewModule,
   invoicingModule,
   settingsModule,
+  styleguideModule,
 ];
 
 /** Modules a role may open, in menu order. `disabled` holds ids an admin turned off (chunk F5). */
