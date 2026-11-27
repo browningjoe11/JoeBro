@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { NavLink, Outlet, useLocation } from "react-router-dom";
+import { ThemePicker, useTheme } from "../ui/theme";
 import { Icon } from "./Icon";
 import { GROUP_LABELS, type ModuleDefinition, type ModuleGroup, type Role } from "./modules";
 
@@ -25,6 +26,7 @@ export function Layout({ modules, role, onRoleChange }: LayoutProps) {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [narrow, setNarrow] = useState(() => readNarrow());
   const location = useLocation();
+  const [theme, setTheme] = useTheme();
 
   // Close the phone drawer after navigating.
   useEffect(() => setDrawerOpen(false), [location.pathname]);
@@ -93,7 +95,9 @@ export function Layout({ modules, role, onRoleChange }: LayoutProps) {
             <Icon name="menu" />
           </button>
           <span className="topbar-title">Joebros</span>
-          <label className="role-picker">
+          <div className="topbar-tools">
+          <ThemePicker theme={theme} onChange={setTheme} />
+          <label className="topbar-select">
             <span>Preview as</span>
             <select id="preview-role" value={role} onChange={(e) => onRoleChange(e.target.value as Role)}>
               {(Object.keys(ROLE_LABELS) as Role[]).map((r) => (
@@ -103,6 +107,7 @@ export function Layout({ modules, role, onRoleChange }: LayoutProps) {
               ))}
             </select>
           </label>
+          </div>
         </header>
 
         <main id="main" className="content" tabIndex={-1}>

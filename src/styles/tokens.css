@@ -1,0 +1,91 @@
+/*
+ * Joebros design tokens. Every color in the app comes from here.
+ * Themes: light (default), dark, or follow the device ("system").
+ * The chosen theme is set as data-theme on <html> by src/ui/theme.tsx.
+ */
+:root {
+  /* Surfaces and text */
+  --bg: #e9ecea;
+  --surface: #ffffff;
+  --surface-2: #f4f6f5;
+  --surface-3: #e6ebe9;
+  --ink: #1b2826;
+  --muted: #5d6b68;
+  --line: #d3d9d7;
+  --line-strong: #b4bfbc;
+
+  /* Brand: job-site teal with hi-vis yellow for attention */
+  --brand: #1f5e5b;
+  --brand-hover: #184b49;
+  --brand-ink: #ffffff;
+  --brand-soft: #dcebea;
+  --hivis: #e3a400;
+  --hivis-soft: #fbf0cf;
+
+  /* Status colors (separate from brand) */
+  --good: #2e7d4f;
+  --good-soft: #dff1e6;
+  --warn: #9a6200;
+  --warn-soft: #fbf0cf;
+  --bad: #b3261e;
+  --bad-soft: #fbe3e1;
+  --info: #2b5c9e;
+  --info-soft: #e1ebf8;
+
+  /* Type */
+  --f-display: "Barlow Condensed", "Arial Narrow", Arial, sans-serif;
+  --f-body: "Barlow", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --f-mono: "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+  --text-xs: 12px;
+  --text-sm: 14px;
+  --text-md: 16px;
+  --text-lg: 18px;
+  --text-xl: 22px;
+  --text-2xl: 28px;
+  --text-3xl: 34px;
+
+  /* Spacing (4px grid), shape, depth */
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 24px;
+  --sp-6: 32px;
+  --radius-sm: 4px;
+  --radius: 8px;
+  --radius-lg: 12px;
+  --shadow: 0 1px 2px rgba(20, 40, 38, 0.08), 0 2px 8px rgba(20, 40, 38, 0.06);
+  --shadow-lg: 0 8px 32px rgba(20, 40, 38, 0.18);
+  --scrim: rgba(10, 20, 19, 0.4);
+
+  /* Layout */
+  --sidebar-w: 248px;
+  --sidebar-w-narrow: 68px;
+  --control-h: 40px;
+
+  color-scheme: light;
+}
+
+/* Dark values, used when the device is dark and no explicit choice is set, or when dark is chosen. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #121a19; --surface: #1b2624; --surface-2: #22302e; --surface-3: #2a3a38;
+    --ink: #e6eeec; --muted: #9aaba7; --line: #314240; --line-strong: #46605c;
+    --brand: #5fb3ad; --brand-hover: #79c4be; --brand-ink: #0d1716; --brand-soft: #1f3533;
+    --hivis: #f0b92b; --hivis-soft: #3a3115;
+    --good: #7fd19f; --good-soft: #1c3426; --warn: #f0b92b; --warn-soft: #3a3115;
+    --bad: #f2867e; --bad-soft: #3d1f1d; --info: #8fb6ec; --info-soft: #1d2a3d;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.4); --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.55); --scrim: rgba(0, 0, 0, 0.55);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #121a19; --surface: #1b2624; --surface-2: #22302e; --surface-3: #2a3a38;
+  --ink: #e6eeec; --muted: #9aaba7; --line: #314240; --line-strong: #46605c;
+  --brand: #5fb3ad; --brand-hover: #79c4be; --brand-ink: #0d1716; --brand-soft: #1f3533;
+  --hivis: #f0b92b; --hivis-soft: #3a3115;
+  --good: #7fd19f; --good-soft: #1c3426; --warn: #f0b92b; --warn-soft: #3a3115;
+  --bad: #f2867e; --bad-soft: #3d1f1d; --info: #8fb6ec; --info-soft: #1d2a3d;
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.4); --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.55); --scrim: rgba(0, 0, 0, 0.55);
+  color-scheme: dark;
+}

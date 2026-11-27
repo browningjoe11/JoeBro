@@ -16,7 +16,7 @@ describe("app shell", () => {
     renderAt("/");
     expect(await screen.findByRole("heading", { level: 1, name: "Dashboard" })).toBeInTheDocument();
     const nav = screen.getByRole("navigation");
-    ["Dashboard", "Contacts", "Sales", "Operations", "Onsite", "Review", "Invoicing", "Settings"].forEach((label) =>
+    ["Dashboard", "Contacts", "Sales", "Operations", "Onsite", "Review", "Invoicing", "Settings", "Style guide"].forEach((label) =>
       expect(within(nav).getByRole("link", { name: label })).toBeInTheDocument(),
     );
   });
