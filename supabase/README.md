@@ -15,7 +15,21 @@ Postgres on Supabase (free tier). The schema lives in `migrations/` as plain SQL
 
 Ticket stages run Lead → Site visit → Estimating → Estimate sent → Signed → Scheduling → Scheduled → Onsite → Review → Invoicing → Paid. Any open ticket can be marked Lost (a reason is required), and a lost ticket can be reopened.
 
-Row-level security is on for every table: only signed-in, active users can read or write. Chunk F4 narrows this by role.
+## Sign-in and roles (chunk F4)
+
+Accounts live in Supabase Auth. Each new account gets a `profiles` row automatically: the very first account becomes an active **admin**, and every later one starts as a switched-off technician until an admin turns it on and picks a role. Nobody can change their own role, and the last active admin can't be demoted.
+
+Row-level security is on for every table. What each role gets:
+
+| Role | Sees | Can change tickets in these stages |
+| --- | --- | --- |
+| admin | everything | all; only admins delete |
+| sales | all customers and tickets | Lead → Signed, Lost |
+| operations | all customers and tickets | Signed → Review, Lost |
+| reviewer | all customers and tickets | Onsite (send back), Review → Paid |
+| technician | only tickets assigned to them, plus those customers and their history | Scheduled → Review, on their own jobs |
+
+Admins, sales and operations add and edit customers and properties. Anyone who can see a ticket can add a note to it. Switched-off accounts and visitors who aren't signed in see nothing.
 
 ## Sample data
 
@@ -37,4 +51,4 @@ Until both are set, the action skips with a warning.
 
 ## Testing
 
-`npm test` loads every migration and the seed into an in-memory Postgres (PGlite) and checks the rules: stage moves, required lost reason, phone and email cleanup, one primary property, history logging, and RLS on every table. Add a migration as a new file; never edit one that has already been applied.
+`npm test` loads every migration and the seed into an in-memory Postgres (PGlite) and checks the rules: stage moves, required lost reason, phone and email cleanup, one primary property, history logging, RLS on every table, and (in `tests/roles.test.ts`) what each role can see and change. Add a migration as a new file; never edit one that has already been applied.
