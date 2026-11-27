@@ -1,0 +1,9 @@
+# Minimal Supabase CLI config. The hosted project is linked in CI (see .github/workflows/database.yml).
+project_id = "joebro"
+
+[db]
+major_version = 17
+
+[db.seed]
+enabled = true
+sql_paths = ["./seed.sql"]
