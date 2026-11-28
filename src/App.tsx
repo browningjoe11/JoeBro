@@ -11,6 +11,7 @@ import { memoryTickets, TicketsProvider, type TicketsBackend } from "./core/tick
 import { CalendarProvider, memoryCalendar, type CalendarBackend } from "./core/calendar";
 import { CrewsProvider, memoryCrews, type CrewsBackend } from "./core/crews";
 import { ImportProvider, memoryImport, type ImportBackend } from "./core/import";
+import { EstimatesProvider, memoryEstimates, type EstimatesBackend } from "./core/estimate";
 import { MODULES, modulesFor } from "./modules/registry";
 
 interface AppProps {
@@ -32,6 +33,8 @@ interface AppProps {
   crmImport?: ImportBackend;
   /** Where crews and technicians live. Preview mode uses in-memory sample crews. */
   crews?: CrewsBackend;
+  /** Where estimates and their saved versions live. Preview mode keeps them in memory. */
+  estimates?: EstimatesBackend;
 }
 
 type Backends = {
@@ -42,10 +45,11 @@ type Backends = {
   priceBook?: PriceBookBackend;
   crmImport?: ImportBackend;
   crews?: CrewsBackend;
+  estimates?: EstimatesBackend;
 };
 
-export function App({ auth = null, initialRole = "admin", settings, tickets, contacts, calendar, priceBook, crmImport, crews }: AppProps) {
-  const backends = { settings, tickets, contacts, calendar, priceBook, crmImport, crews };
+export function App({ auth = null, initialRole = "admin", settings, tickets, contacts, calendar, priceBook, crmImport, crews, estimates }: AppProps) {
+  const backends = { settings, tickets, contacts, calendar, priceBook, crmImport, crews, estimates };
   if (!auth) return <PreviewApp initialRole={initialRole} backends={backends} />;
   return (
     <AuthProvider client={auth}>
@@ -94,9 +98,12 @@ function WithData({ backends, user, children }: { backends: Backends; user: Curr
   const [fallback] = useState(() => {
     // Tickets read customer details from the contacts store, as the database joins them, so edits show everywhere.
     const contacts = memoryContacts().backend;
+    const tickets = memoryTickets({ contacts }).backend;
     return {
       settings: memorySettings().backend,
-      tickets: memoryTickets({ contacts }).backend,
+      tickets,
+      // Saving a version sets the ticket's estimated value, as the database does.
+      estimates: memoryEstimates({ onVersion: (ticketId, total) => tickets.update(ticketId, { estimatedValue: total }) }).backend,
       contacts,
       calendar: memoryCalendar().backend,
       priceBook: memoryPriceBook().backend,
@@ -112,7 +119,9 @@ function WithData({ backends, user, children }: { backends: Backends; user: Curr
             <PriceBookProvider backend={backends.priceBook ?? fallback.priceBook}>
               <CrewsProvider backend={backends.crews ?? fallback.crews}>
                 <CalendarProvider backend={backends.calendar ?? fallback.calendar}>
-                  <ImportProvider backend={backends.crmImport ?? fallback.crmImport}>{children}</ImportProvider>
+                  <ImportProvider backend={backends.crmImport ?? fallback.crmImport}>
+                    <EstimatesProvider backend={backends.estimates ?? fallback.estimates}>{children}</EstimatesProvider>
+                  </ImportProvider>
                 </CalendarProvider>
               </CrewsProvider>
             </PriceBookProvider>
