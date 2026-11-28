@@ -70,6 +70,26 @@ describe("Sheet", () => {
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
     expect(opener).toHaveFocus();
   });
+
+  it("keeps focus in a field when the page behind it re-renders", async () => {
+    function Busy() {
+      const [n, setN] = useState(0);
+      return (
+        <>
+          <button onClick={() => setN(n + 1)}>Tick {n}</button>
+          <Sheet open onClose={() => undefined} title="Edit">
+            <input aria-label="Item" />
+          </Sheet>
+        </>
+      );
+    }
+    render(<Busy />);
+    const item = screen.getByRole("textbox", { name: "Item" });
+    await userEvent.click(item);
+    screen.getByRole("button", { name: "Tick 0" }).click(); // re-render without moving focus
+    await screen.findByRole("button", { name: "Tick 1" });
+    expect(item).toHaveFocus();
+  });
 });
 
 describe("useTheme", () => {

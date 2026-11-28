@@ -1,0 +1,72 @@
+export type EventKind = "site_visit" | "job" | "other";
+export type EventStatus = "tentative" | "confirmed";
+
+/** Shared color palette. Same names as the --ev-<name> tokens and the database check. */
+export const EVENT_COLORS = ["teal", "blue", "green", "amber", "orange", "red", "purple", "slate"] as const;
+export type EventColor = (typeof EVENT_COLORS)[number];
+
+export const KIND_LABELS: Record<EventKind, string> = {
+  site_visit: "Site visit",
+  job: "Job",
+  other: "Other",
+};
+
+/** Color used when an event has no color of its own and no crew. */
+export const KIND_COLORS: Record<EventKind, EventColor> = {
+  site_visit: "blue",
+  job: "teal",
+  other: "slate",
+};
+
+export interface CalendarEvent {
+  id: string;
+  kind: EventKind;
+  /** Tentative ("soft") bookings are drawn striped with a dashed edge. */
+  status: EventStatus;
+  title: string;
+  /** ISO timestamps. */
+  start: string;
+  end: string;
+  ticketId: string | null;
+  /** "#1003 Bathroom refresh at rental", when linked to a ticket. */
+  ticketLabel: string;
+  ticketNumber: number | null;
+  /** Job-site address from the ticket. */
+  site: string;
+  /** Crew doing the work (crews arrive in chunk O1). */
+  crewId: string | null;
+  assignedTo: string | null;
+  /** Override color; null = crew color, then the kind's color. */
+  color: EventColor | null;
+  notes: string;
+  isExample: boolean;
+}
+
+export interface NewCalendarEvent {
+  kind: EventKind;
+  status: EventStatus;
+  title: string;
+  start: string;
+  end: string;
+  ticketId?: string | null;
+  crewId?: string | null;
+  assignedTo?: string | null;
+  color?: EventColor | null;
+  notes?: string;
+}
+
+export type CalendarEventPatch = Partial<NewCalendarEvent>;
+
+/** Where calendar events live. The live app uses Supabase; preview mode and tests keep them in memory. */
+export interface CalendarBackend {
+  /** Events that overlap [from, to). */
+  list(from: Date, to: Date): Promise<CalendarEvent[]>;
+  create(event: NewCalendarEvent, actorId: string | null): Promise<CalendarEvent>;
+  update(id: string, patch: CalendarEventPatch): Promise<CalendarEvent>;
+  remove(id: string): Promise<void>;
+}
+
+/** The color an event is drawn in. `crewColor` comes from the crew once crews exist (O1). */
+export function eventColor(e: Pick<CalendarEvent, "color" | "kind">, crewColor?: EventColor | null): EventColor {
+  return e.color ?? crewColor ?? KIND_COLORS[e.kind];
+}

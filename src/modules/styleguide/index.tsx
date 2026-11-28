@@ -1,7 +1,9 @@
 import { useState } from "react";
+import { EVENT_COLORS } from "../../core/calendar";
 import { Icon } from "../../core/Icon";
 import { ModulePage } from "../../core/ModulePage";
 import type { ModuleDefinition } from "../../core/modules";
+import { describePrice, PriceItemPicker, type PriceItem } from "../../core/pricebook";
 import { Badge, Button, DataTable, InfoTip, Section, SelectField, Sheet, TextAreaField, TextField, type Column, type Tone } from "../../ui";
 
 const SWATCHES = [
@@ -55,6 +57,7 @@ const MATERIAL_COLUMNS: Column<MaterialRow>[] = [
 
 function StyleGuidePage() {
   const [sheetOpen, setSheetOpen] = useState(false);
+  const [picked, setPicked] = useState<PriceItem | null>(null);
   const materialsTotal = EXAMPLE_MATERIALS.reduce((sum, r) => sum + r.qty * r.cost, 0);
 
   return (
@@ -71,6 +74,33 @@ function StyleGuidePage() {
               </div>
             </div>
           ))}
+        </div>
+      </Section>
+
+      <Section
+        title="Calendar colors"
+        storageKey="styleguide.calendar"
+        info="Bookings and crews pick one of these by name. Tentative (soft) bookings are striped with a dashed edge; confirmed ones are solid."
+      >
+        <div className="sg-swatches">
+          {EVENT_COLORS.map((c) => (
+            <div className="sg-swatch" key={c}>
+              <span className={`ev-swatch ev--${c}`} />
+              <span className={`ev-swatch ev--${c} ev--tentative`} />
+              <code className="mono">--ev-{c}</code>
+            </div>
+          ))}
+        </div>
+        <div className="row" style={{ marginTop: "var(--sp-4)" }}>
+          <span className="muted">Day / week switch:</span>
+          <div className="segmented" role="group" aria-label="Example view switch">
+            <button type="button" aria-pressed="false">
+              Day
+            </button>
+            <button type="button" aria-pressed="true">
+              Week
+            </button>
+          </div>
         </div>
       </Section>
 
@@ -162,6 +192,15 @@ function StyleGuidePage() {
             </tr>
           }
         />
+      </Section>
+
+      <Section
+        title="Price book picker"
+        storageKey="styleguide.picker"
+        info="Search the price book and pick an item. Retired items never show. Estimates use this to add lines, limited to one kind or trade."
+      >
+        <PriceItemPicker kind="material" onPick={setPicked} />
+        <p className="pb-muted">{picked ? `Picked: ${picked.name}, ${describePrice(picked)}` : "Nothing picked yet."}</p>
       </Section>
 
       <Section title="Bubble notes" storageKey="styleguide.tips" defaultOpen={false}>
