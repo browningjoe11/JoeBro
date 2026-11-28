@@ -94,11 +94,12 @@ describe("estimate tables", () => {
       expect(e.rows[0].version_count).toBe(2);
       const t = await tx.query<{ estimated_value: string }>("select estimated_value::text from tickets where id = $1", [DECK]);
       expect(t.rows[0].estimated_value).toBe("1750.25");
-      const ev = await tx.query<{ data: Record<string, { to: unknown }> }>(
-        "select data from ticket_events where ticket_id = $1 and kind = 'updated' order by created_at desc, id desc limit 1",
+      // Both saves happen in one transaction, so their events share a time: check the set, not the order.
+      const ev = await tx.query<{ to: string }>(
+        "select data -> 'estimated_value' ->> 'to' as to from ticket_events where ticket_id = $1 and kind = 'updated' and data ? 'estimated_value'",
         [DECK],
       );
-      expect(Number(ev.rows[0].data.estimated_value.to)).toBe(1750.25);
+      expect(ev.rows.map((r) => Number(r.to)).sort((a, b) => a - b)).toEqual([1500, 1750.25]);
     });
   });
 
