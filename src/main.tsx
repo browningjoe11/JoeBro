@@ -11,6 +11,7 @@ import { supabaseSettings } from "./core/settings";
 import { supabaseTickets } from "./core/tickets";
 import { supabaseImport } from "./core/import";
 import { supabaseGeo } from "./core/map";
+import { supabaseSignatures } from "./core/signature";
 import { getSupabase } from "./lib/supabase";
 import "./styles/tokens.css";
 import "./styles/app.css";
@@ -26,11 +27,12 @@ const priceBook = supabase ? supabasePriceBook(supabase) : undefined;
 const crmImport = supabase ? supabaseImport(supabase) : undefined;
 const crews = supabase ? supabaseCrews(supabase) : undefined;
 const geo = supabase ? supabaseGeo(supabase) : undefined;
+const signatures = supabase ? supabaseSignatures(supabase) : undefined;
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <BrowserRouter>
-      <App auth={auth} settings={settings} tickets={tickets} contacts={contacts} calendar={calendar} priceBook={priceBook} crmImport={crmImport} crews={crews} geo={geo} />
+      <App auth={auth} settings={settings} tickets={tickets} contacts={contacts} calendar={calendar} priceBook={priceBook} crmImport={crmImport} crews={crews} geo={geo} signatures={signatures} />
     </BrowserRouter>
   </StrictMode>,
 );

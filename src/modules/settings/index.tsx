@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { ModulePage } from "../../core/ModulePage";
 import type { ModuleDefinition } from "../../core/modules";
 import { useSettings } from "../../core/settings";
@@ -6,6 +7,7 @@ import { CrewsSection, TechniciansSection } from "./CrewsSection";
 import { ListsSection } from "./ListsSection";
 import { ModulesSection } from "./ModulesSection";
 import { TeamSection } from "./TeamSection";
+import { Section } from "../../ui";
 
 function SettingsPage() {
   const { error } = useSettings();
@@ -20,6 +22,11 @@ function SettingsPage() {
       <CrewsSection />
       <TechniciansSection />
       <CompanySection />
+      <Section title="Email signatures" storageKey="settings.signatures" info="Each person's sign-off for estimate and invoice emails. It uses the company profile above.">
+        <p className="settings-help">
+          Everyone sets up their own on the <Link to="/signature">Email signature</Link> page. As an admin you can open anyone's there and set it up for them.
+        </p>
+      </Section>
       <ModulesSection />
       <ListsSection />
     </ModulePage>

@@ -17,7 +17,7 @@ describe("app shell", () => {
     renderAt("/");
     expect(await screen.findByRole("heading", { level: 1, name: "Dashboard" })).toBeInTheDocument();
     const nav = screen.getByRole("navigation");
-    ["Dashboard", "Calendar", "Tickets", "Contacts", "Sales", "Operations", "Onsite", "Review", "Invoicing", "Price book", "Import", "Settings", "Style guide"].forEach((label) =>
+    ["Dashboard", "Calendar", "Tickets", "Contacts", "Sales", "Operations", "Onsite", "Review", "Invoicing", "Price book", "Import", "Email signature", "Settings", "Style guide"].forEach((label) =>
       expect(within(nav).getByRole("link", { name: label })).toBeInTheDocument(),
     );
   });
@@ -70,11 +70,11 @@ describe("sign-in", () => {
   });
 
   const menus: Record<string, string[]> = {
-    "joe@example.com": ["Dashboard", "Calendar", "Tickets", "Contacts", "Sales", "Operations", "Onsite", "Review", "Invoicing", "Price book", "Import", "Settings", "Style guide"],
-    "sam@example.com": ["Dashboard", "Calendar", "Tickets", "Contacts", "Sales", "Price book"],
-    "olivia@example.com": ["Dashboard", "Calendar", "Tickets", "Contacts", "Operations", "Onsite"],
-    "tech@example.com": ["Dashboard", "Calendar", "Tickets", "Onsite"],
-    "rae@example.com": ["Dashboard", "Calendar", "Tickets", "Contacts", "Review", "Invoicing"],
+    "joe@example.com": ["Dashboard", "Calendar", "Tickets", "Contacts", "Sales", "Operations", "Onsite", "Review", "Invoicing", "Price book", "Import", "Email signature", "Settings", "Style guide"],
+    "sam@example.com": ["Dashboard", "Calendar", "Tickets", "Contacts", "Sales", "Price book", "Email signature"],
+    "olivia@example.com": ["Dashboard", "Calendar", "Tickets", "Contacts", "Operations", "Onsite", "Email signature"],
+    "tech@example.com": ["Dashboard", "Calendar", "Tickets", "Onsite", "Email signature"],
+    "rae@example.com": ["Dashboard", "Calendar", "Tickets", "Contacts", "Review", "Invoicing", "Email signature"],
   };
 
   it.each(Object.entries(menus))("shows %s only the modules for their role", async (email, expected) => {

@@ -11,6 +11,7 @@ import { invoicingModule } from "./invoicing";
 import { priceBookModule } from "./price-book";
 import { importModule } from "./import";
 import { settingsModule } from "./settings";
+import { signatureModule } from "./signature";
 import { styleguideModule } from "./styleguide";
 
 /** Every module in the app. Add new modules here; menu and routes follow automatically. */
@@ -26,6 +27,7 @@ export const MODULES: readonly ModuleDefinition[] = [
   invoicingModule,
   priceBookModule,
   importModule,
+  signatureModule,
   settingsModule,
   styleguideModule,
 ];

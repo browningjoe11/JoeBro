@@ -12,6 +12,7 @@ import { CalendarProvider, memoryCalendar, type CalendarBackend } from "./core/c
 import { CrewsProvider, memoryCrews, type CrewsBackend } from "./core/crews";
 import { GeoProvider, memoryGeo, type GeoBackend } from "./core/map";
 import { ImportProvider, memoryImport, type ImportBackend } from "./core/import";
+import { memorySignatures, SignaturesProvider, type SignatureBackend } from "./core/signature";
 import { MODULES, modulesFor } from "./modules/registry";
 
 interface AppProps {
@@ -35,6 +36,8 @@ interface AppProps {
   crews?: CrewsBackend;
   /** Turns job-site addresses into map positions. Preview mode uses fixed sample positions. */
   geo?: GeoBackend;
+  /** Where email signatures live. Preview mode keeps them in memory. */
+  signatures?: SignatureBackend;
 }
 
 type Backends = {
@@ -46,10 +49,11 @@ type Backends = {
   crmImport?: ImportBackend;
   crews?: CrewsBackend;
   geo?: GeoBackend;
+  signatures?: SignatureBackend;
 };
 
-export function App({ auth = null, initialRole = "admin", settings, tickets, contacts, calendar, priceBook, crmImport, crews, geo }: AppProps) {
-  const backends = { settings, tickets, contacts, calendar, priceBook, crmImport, crews, geo };
+export function App({ auth = null, initialRole = "admin", settings, tickets, contacts, calendar, priceBook, crmImport, crews, geo, signatures }: AppProps) {
+  const backends = { settings, tickets, contacts, calendar, priceBook, crmImport, crews, geo, signatures };
   if (!auth) return <PreviewApp initialRole={initialRole} backends={backends} />;
   return (
     <AuthProvider client={auth}>
@@ -76,6 +80,7 @@ function SignedInApp({ backends }: { backends: Backends }) {
       user={{
         id: profile.id,
         name: profile.fullName || account.email || "",
+        email: account.email,
         role: profile.role,
       }}
     >
@@ -107,6 +112,7 @@ function WithData({ backends, user, children }: { backends: Backends; user: Curr
       crmImport: memoryImport().backend,
       crews: memoryCrews().backend,
       geo: memoryGeo().backend,
+      signatures: memorySignatures().backend,
     };
   });
   return (
@@ -118,7 +124,9 @@ function WithData({ backends, user, children }: { backends: Backends; user: Curr
               <CrewsProvider backend={backends.crews ?? fallback.crews}>
                 <CalendarProvider backend={backends.calendar ?? fallback.calendar}>
                   <GeoProvider backend={backends.geo ?? fallback.geo}>
-                    <ImportProvider backend={backends.crmImport ?? fallback.crmImport}>{children}</ImportProvider>
+                    <ImportProvider backend={backends.crmImport ?? fallback.crmImport}>
+                      <SignaturesProvider backend={backends.signatures ?? fallback.signatures}>{children}</SignaturesProvider>
+                    </ImportProvider>
                   </GeoProvider>
                 </CalendarProvider>
               </CrewsProvider>

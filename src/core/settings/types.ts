@@ -12,6 +12,11 @@ export interface CompanySettings {
   zip: string;
   /** Small inline image (data: URL), or null for the built-in mark. */
   logoDataUrl: string | null;
+  /**
+   * Public web address of the same logo, for emails (Gmail and Outlook block
+   * images stored inside an email). Set by publishLogo when an admin saves.
+   */
+  emailLogoUrl: string | null;
   /** Module ids an admin switched off. */
   disabledModules: string[];
 }
@@ -59,6 +64,8 @@ export interface SettingsBackend {
   loadTeam(): Promise<TeamMember[]>;
   updateMember(id: string, patch: Partial<Pick<TeamMember, "fullName" | "role" | "active">>): Promise<void>;
   invite(invite: Invite): Promise<void>;
+  /** Copies a logo (data: URL) to a public web address emails can show, and returns that address. */
+  publishLogo(dataUrl: string): Promise<string>;
 }
 
 export const DEFAULT_COMPANY: CompanySettings = {
@@ -72,6 +79,7 @@ export const DEFAULT_COMPANY: CompanySettings = {
   state: "DE",
   zip: "",
   logoDataUrl: null,
+  emailLogoUrl: null,
   disabledModules: [],
 };
 
