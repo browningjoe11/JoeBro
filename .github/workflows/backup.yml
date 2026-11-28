@@ -1,0 +1,125 @@
+name: Nightly backup
+# Chunk F9. The free Supabase plan keeps no backups, so every night this:
+#   1. dumps the live database (roles, schema, data) with the Supabase CLI,
+#   2. test-restores the dump into a throwaway Supabase database on the runner
+#      and checks every table's row count,
+#   3. locks the files in a password-protected 7z archive (AES-256) and keeps
+#      it as a run artifact for 30 days.
+# This repository is public, so the archive must stay encrypted and the logs
+# must never print rows. See supabase/README.md, "Backups", to restore.
+on:
+  schedule:
+    # 07:17 UTC is 2:17 AM in Delaware in winter (3:17 AM in summer).
+    - cron: "17 7 * * *"
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - ".github/workflows/backup.yml"
+      - "scripts/backup/**"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: backup
+  cancel-in-progress: false
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      SUPABASE_PROJECT_ID: nczrjscihxnssuvrshgy
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+      SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+      BACKUP_PASSWORD: ${{ secrets.BACKUP_PASSWORD }}
+    steps:
+      - name: Check secrets are set
+        run: |
+          if [ -z "$SUPABASE_ACCESS_TOKEN" ] || [ -z "$SUPABASE_DB_PASSWORD" ]; then
+            echo "::error::SUPABASE_ACCESS_TOKEN and SUPABASE_DB_PASSWORD repository secrets are needed to read the database. See supabase/README.md."
+            exit 1
+          fi
+          if [ -z "$BACKUP_PASSWORD" ]; then
+            echo "::warning::BACKUP_PASSWORD is not set, so tonight's backup will be tested but not saved. See supabase/README.md, Backups."
+          fi
+
+      - uses: actions/checkout@v4
+
+      - uses: supabase/setup-cli@v1
+        with:
+          version: 3.4.0
+
+      - name: Link project
+        run: supabase link --project-ref "$SUPABASE_PROJECT_ID"
+
+      - name: Dump the database
+        env:
+          OUT: ${{ runner.temp }}/backup
+        run: |
+          mkdir -p "$OUT"
+          supabase db dump --remote --password "$SUPABASE_DB_PASSWORD" --role-only -f "$OUT/roles.sql"
+          supabase db dump --remote --password "$SUPABASE_DB_PASSWORD" -f "$OUT/schema.sql"
+          # The two storage tables below can't be written back by the postgres
+          # role, so Supabase's own restore guide leaves them out.
+          supabase db dump --remote --password "$SUPABASE_DB_PASSWORD" --data-only --use-copy \
+            -x storage.buckets_vectors -x storage.vector_indexes -f "$OUT/data.sql"
+          ls -l "$OUT"
+
+      - name: Start a throwaway database for the test restore
+        env:
+          WORK: ${{ runner.temp }}/restore-test
+        run: |
+          mkdir -p "$WORK/supabase"
+          cat > "$WORK/supabase/config.toml" <<'TOML'
+          project_id = "restore-test"
+          [db]
+          port = 54422
+          shadow_port = 54420
+          major_version = 17
+          [db.seed]
+          enabled = false
+          TOML
+          # Use the same Postgres, Auth and Storage versions as the live project
+          # (written by "supabase link"), so the sign-in tables have the same
+          # columns as the backup.
+          mkdir -p "$WORK/supabase/.temp"
+          cp supabase/.temp/*-version "$WORK/supabase/.temp/" 2>/dev/null || true
+          for f in "$WORK"/supabase/.temp/*-version; do
+            [ -e "$f" ] && echo "$(basename "$f"): $(cat "$f")"
+          done
+          supabase db start --workdir "$WORK"
+
+      - name: Test restore
+        run: >
+          scripts/backup/verify-restore.sh "$RUNNER_TEMP/backup"
+          "postgresql://postgres:postgres@127.0.0.1:54422/postgres"
+
+      - name: Encrypt
+        if: env.BACKUP_PASSWORD != ''
+        id: archive
+        working-directory: ${{ runner.temp }}/backup
+        run: |
+          command -v 7z >/dev/null || sudo apt-get install -y p7zip-full
+          name="joebro-backup-$(date -u +%Y-%m-%d)"
+          # -mhe=on also hides the file names inside the archive.
+          7z a -t7z -mhe=on -mx=9 -p"$BACKUP_PASSWORD" "$RUNNER_TEMP/$name.7z" roles.sql schema.sql data.sql > /dev/null
+          rm -f roles.sql schema.sql data.sql
+          echo "name=$name" >> "$GITHUB_OUTPUT"
+          ls -l "$RUNNER_TEMP/$name.7z"
+
+      - name: Keep the backup for 30 days
+        if: env.BACKUP_PASSWORD != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.archive.outputs.name }}
+          path: ${{ runner.temp }}/${{ steps.archive.outputs.name }}.7z
+          retention-days: 30
+          compression-level: 0
+          if-no-files-found: error
+
+      - name: Fail if the backup was not saved
+        if: env.BACKUP_PASSWORD == ''
+        run: |
+          echo "::error::The dump and test restore worked, but no backup was saved because the BACKUP_PASSWORD secret is not set."
+          exit 1
