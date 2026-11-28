@@ -1,7 +1,7 @@
 import { ALL_ROLES } from "../modules";
 import { ALL_STAGES, canEditStage, DEFAULT_TRANSITIONS, type Stage } from "./stages";
 import type { TicketSummary } from "./types";
-import { countByStage, isTicketOverdue, STAGE_NEXT_ACTION, waitingOn, WORK_ROLES } from "./waiting";
+import { countByStage, isTicketOverdue, nextActionFor, STAGE_NEXT_ACTION, waitingOn, WORK_ROLES } from "./waiting";
 
 const now = new Date(2026, 10, 28, 9);
 const at = (days: number) => new Date(2026, 10, 28 + days, 12).toISOString();
@@ -20,7 +20,7 @@ function ticket(stage: Stage, extra: Partial<TicketSummary> = {}): TicketSummary
     trade: "Decks",
     estimatedValue: null,
     nextActionAt: null,
-    assignedTo: null,
+    assignedTo: "tech-1",
     isExample: false,
     ...extra,
   };
@@ -58,6 +58,18 @@ describe("which tickets wait on which role", () => {
       expect(forward.length).toBeGreaterThan(0);
     }
     expect(ALL_ROLES).toContain("admin");
+  });
+
+  it("hands an unassigned technician-stage ticket to operations, since no technician can see it", () => {
+    const unassigned = [ticket("scheduled", { assignedTo: null }), ticket("onsite", { assignedTo: null })];
+    expect(waitingOn("technician", unassigned, now)).toEqual([]);
+    expect(waitingOn("operations", unassigned, now)).toHaveLength(2);
+    expect(waitingOn("admin", unassigned, now)).toHaveLength(2);
+    expect(nextActionFor(unassigned[0])).toEqual({ role: "operations", label: "Technician to assign" });
+    // Assigned, or in any other stage, nothing changes.
+    expect(nextActionFor(ticket("scheduled"))).toEqual(STAGE_NEXT_ACTION.scheduled);
+    expect(nextActionFor(ticket("lead", { assignedTo: null }))).toEqual(STAGE_NEXT_ACTION.lead);
+    expect(nextActionFor(ticket("paid", { assignedTo: null }))).toBeNull();
   });
 
   it("sorts overdue first, then by follow-up date, then oldest in stage", () => {

@@ -7,6 +7,7 @@ import {
   countByStage,
   daysInStage,
   isTicketOverdue,
+  nextActionFor,
   PIPELINE,
   ROLE_LABELS,
   STAGE_LABELS,
@@ -57,8 +58,8 @@ export function Dashboard() {
       header: "To do",
       render: (t) => (
         <span className="todo-cell">
-          <strong>{STAGE_NEXT_ACTION[t.stage]?.label}</strong>
-          {everyone && <small>{ROLE_LABELS[STAGE_NEXT_ACTION[t.stage]!.role]}</small>}
+          <strong>{nextActionFor(t)?.label}</strong>
+          {everyone && <small>{ROLE_LABELS[nextActionFor(t)!.role]}</small>}
         </span>
       ),
     },
@@ -163,7 +164,7 @@ export function Dashboard() {
                 {waiting.map((t) => (
                   <li key={t.id} className={isTicketOverdue(t, now) ? "next-card next-card--overdue" : "next-card"}>
                     <div className="next-card-top">
-                      <strong>{STAGE_NEXT_ACTION[t.stage]?.label}</strong>
+                      <strong>{nextActionFor(t)?.label}</strong>
                       {columns[2].render(t)}
                     </div>
                     {columns[1].render(t)}

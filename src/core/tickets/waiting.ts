@@ -41,6 +41,23 @@ export const STAGE_NEXT_ACTION: Record<Stage, NextAction | null> = {
   lost: null,
 };
 
+/** Stages where the next move is the technician's, so an unassigned ticket there has nobody to pick it up. */
+const TECH_STAGES: readonly Stage[] = ["scheduled", "onsite"];
+
+/**
+ * What this ticket is waiting for, and who has to act. Same as STAGE_NEXT_ACTION,
+ * except a ticket in a technician stage with no technician assigned: technicians
+ * can only see tickets assigned to them (RLS), so it would show on nobody's list.
+ * It waits on operations to assign someone instead.
+ */
+export function nextActionFor(t: Pick<TicketSummary, "stage" | "assignedTo">): NextAction | null {
+  const a = STAGE_NEXT_ACTION[t.stage];
+  if (a && a.role === "technician" && !t.assignedTo && TECH_STAGES.includes(t.stage)) {
+    return { role: "operations", label: "Technician to assign" };
+  }
+  return a;
+}
+
 /** Stages whose next move belongs to this role (every waiting stage for admin). */
 export function stagesWaitingOn(role: Role): Stage[] {
   return PIPELINE.filter((s) => {
@@ -64,13 +81,16 @@ export function daysInStage(t: Pick<TicketSummary, "stageChangedAt">, now = new 
 /**
  * Exactly the tickets waiting on this role, most urgent first: overdue, then
  * by follow-up date, then tickets with no date, longest in stage first.
- * Admin gets every ticket that is waiting on someone.
+ * Admin gets every ticket that is waiting on someone. A technician-stage ticket
+ * with no technician assigned counts as waiting on operations (see nextActionFor).
  */
 export function waitingOn(role: Role, tickets: readonly TicketSummary[], now = new Date()): TicketSummary[] {
-  const stages = new Set(stagesWaitingOn(role));
   const due = (t: TicketSummary) => (t.nextActionAt ? new Date(t.nextActionAt).getTime() : Infinity);
   return tickets
-    .filter((t) => stages.has(t.stage))
+    .filter((t) => {
+      const a = nextActionFor(t);
+      return a !== null && (role === "admin" || a.role === role);
+    })
     .sort(
       (a, b) =>
         Number(isTicketOverdue(b, now)) - Number(isTicketOverdue(a, now)) ||
