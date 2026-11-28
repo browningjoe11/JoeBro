@@ -1,4 +1,4 @@
-import { useId, type InputHTMLAttributes, type ReactNode, type SelectHTMLAttributes, type TextareaHTMLAttributes } from "react";
+import { useId, type InputHTMLAttributes, type Ref, type ReactNode, type SelectHTMLAttributes, type TextareaHTMLAttributes } from "react";
 import { InfoTip } from "./InfoTip";
 
 interface FieldShellProps {
@@ -47,7 +47,15 @@ function FieldShell({ label, hint, error, info, prefix, suffix, children }: Fiel
 
 type Common = Omit<FieldShellProps, "children">;
 
-export function TextField({ label, hint, error, info, prefix, suffix, ...input }: Common & InputHTMLAttributes<HTMLInputElement>) {
+export function TextField({
+  label,
+  hint,
+  error,
+  info,
+  prefix,
+  suffix,
+  ...input
+}: Common & InputHTMLAttributes<HTMLInputElement> & { ref?: Ref<HTMLInputElement> }) {
   return (
     <FieldShell {...{ label, hint, error, info, prefix, suffix }}>
       {({ id, describedBy, invalid }) => (

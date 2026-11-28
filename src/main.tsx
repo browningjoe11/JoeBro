@@ -3,6 +3,7 @@ import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 import { App } from "./App";
 import { supabaseAuth } from "./core/auth";
+import { supabaseContacts } from "./core/contacts";
 import { supabaseSettings } from "./core/settings";
 import { supabaseTickets } from "./core/tickets";
 import { getSupabase } from "./lib/supabase";
@@ -14,11 +15,12 @@ const supabase = getSupabase();
 const auth = supabase ? supabaseAuth(supabase) : null;
 const settings = supabase ? supabaseSettings(supabase) : undefined;
 const tickets = supabase ? supabaseTickets(supabase) : undefined;
+const contacts = supabase ? supabaseContacts(supabase) : undefined;
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <BrowserRouter>
-      <App auth={auth} settings={settings} tickets={tickets} />
+      <App auth={auth} settings={settings} tickets={tickets} contacts={contacts} />
     </BrowserRouter>
   </StrictMode>,
 );

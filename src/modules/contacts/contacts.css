@@ -1,0 +1,28 @@
+/* Contacts module (C1). Colors come only from tokens.css. */
+.nowrap { white-space: nowrap; }
+.pre-wrap { white-space: pre-wrap; }
+.contact-cell { display: grid; gap: 2px; min-width: 180px; }
+.contact-cell small, .contact-open { color: var(--muted); font-size: var(--text-sm); }
+.contact-cell .ticket-badges { margin-top: 2px; }
+.contact-actions { display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-2); }
+.contact-actions a.btn { text-decoration: none; }
+.contact-grid { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 3fr); gap: var(--sp-4); align-items: start; }
+.dup-warning { padding: var(--sp-3) var(--sp-4); border: 1px solid var(--hivis); border-radius: var(--radius); background: var(--warn-soft); color: var(--ink); }
+.dup-warning strong { color: var(--warn); }
+.dup-warning ul { margin: var(--sp-1) 0 0; padding-left: var(--sp-5); }
+.property-list { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--sp-3); }
+.property-list li { display: grid; gap: 2px; padding: var(--sp-3); border: 1px solid var(--line); border-radius: var(--radius-sm); background: var(--surface-2); }
+.property-list small { color: var(--muted); font-size: var(--text-sm); }
+.property-head { display: flex; align-items: center; gap: var(--sp-2); }
+.property-head .btn { margin-left: auto; }
+.property-notes { margin: var(--sp-1) 0 0; font-size: var(--text-sm); white-space: pre-wrap; }
+.timeline-context { display: block; color: var(--muted); font-size: var(--text-sm); }
+.toolbar .field-hint { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+@media (max-width: 1100px) {
+  .contact-grid { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 600px) {
+  .contact-actions .btn { flex: 1 1 auto; }
+  .toolbar .field-hint { display: none; }
+}

@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 import { AccountPendingScreen, AuthProvider, LoadingScreen, LoginPage, useAuth, type AuthClient } from "./core/auth";
 import { Layout, type Account } from "./core/Layout";
+import { ContactsProvider, memoryContacts, type ContactsBackend } from "./core/contacts";
 import { CurrentUserProvider, type CurrentUser } from "./core/currentUser";
 import type { Role } from "./core/modules";
 import { memorySettings, SettingsProvider, useSettings, type SettingsBackend } from "./core/settings";
@@ -17,12 +18,14 @@ interface AppProps {
   settings?: SettingsBackend;
   /** Where tickets live. Preview mode uses in-memory sample tickets. */
   tickets?: TicketsBackend;
+  /** Where customers and their properties live. Preview mode uses in-memory sample customers. */
+  contacts?: ContactsBackend;
 }
 
-type Backends = { settings?: SettingsBackend; tickets?: TicketsBackend };
+type Backends = { settings?: SettingsBackend; tickets?: TicketsBackend; contacts?: ContactsBackend };
 
-export function App({ auth = null, initialRole = "admin", settings, tickets }: AppProps) {
-  const backends = { settings, tickets };
+export function App({ auth = null, initialRole = "admin", settings, tickets, contacts }: AppProps) {
+  const backends = { settings, tickets, contacts };
   if (!auth) return <PreviewApp initialRole={initialRole} backends={backends} />;
   return (
     <AuthProvider client={auth}>
@@ -71,11 +74,14 @@ function WithData({ backends, user, children }: { backends: Backends; user: Curr
   const [fallback] = useState(() => ({
     settings: memorySettings().backend,
     tickets: memoryTickets().backend,
+    contacts: memoryContacts().backend,
   }));
   return (
     <CurrentUserProvider user={user}>
       <SettingsProvider backend={backends.settings ?? fallback.settings} catalog={MODULES}>
-        <TicketsProvider backend={backends.tickets ?? fallback.tickets}>{children}</TicketsProvider>
+        <TicketsProvider backend={backends.tickets ?? fallback.tickets}>
+          <ContactsProvider backend={backends.contacts ?? fallback.contacts}>{children}</ContactsProvider>
+        </TicketsProvider>
       </SettingsProvider>
     </CurrentUserProvider>
   );
