@@ -255,3 +255,20 @@ h1, h2, h3 { font-family: var(--f-display); letter-spacing: 0.01em; line-height:
   .facts { grid-template-columns: 1fr; gap: 0; }
   .facts dd { margin-bottom: var(--sp-2); }
 }
+
+/* ---------- Calendar module (S8) ---------- */
+.cal-toolbar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--sp-3); }
+.cal-nav, .cal-actions { display: flex; align-items: center; gap: var(--sp-2); flex-wrap: wrap; }
+.cal-title { margin: 0 0 0 var(--sp-2); font-size: var(--text-xl); text-transform: uppercase; }
+.cal-legend { display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-2) var(--sp-4); font-size: var(--text-sm); }
+.cal-key { display: inline-flex; align-items: center; gap: var(--sp-2); }
+.cal-count { margin-left: auto; }
+.cal-hint { flex-basis: 100%; }
+.cal-form-pair { display: grid; grid-template-columns: 1fr 1fr; gap: var(--sp-3); }
+.cal-ticket-link { margin: 0; font-size: var(--text-sm); }
+.sheet-foot .cal-delete { margin-right: auto; }
+@media (max-width: 700px) {
+  .cal-title { flex-basis: 100%; margin: var(--sp-1) 0 0; font-size: var(--text-lg); }
+  .cal-actions { width: 100%; justify-content: space-between; }
+  .cal-count { margin-left: 0; }
+}

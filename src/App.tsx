@@ -6,6 +6,7 @@ import { CurrentUserProvider, type CurrentUser } from "./core/currentUser";
 import type { Role } from "./core/modules";
 import { memorySettings, SettingsProvider, useSettings, type SettingsBackend } from "./core/settings";
 import { memoryTickets, TicketsProvider, type TicketsBackend } from "./core/tickets";
+import { CalendarProvider, memoryCalendar, type CalendarBackend } from "./core/calendar";
 import { MODULES, modulesFor } from "./modules/registry";
 
 interface AppProps {
@@ -17,12 +18,14 @@ interface AppProps {
   settings?: SettingsBackend;
   /** Where tickets live. Preview mode uses in-memory sample tickets. */
   tickets?: TicketsBackend;
+  /** Where calendar bookings live. Preview mode uses in-memory sample bookings. */
+  calendar?: CalendarBackend;
 }
 
-type Backends = { settings?: SettingsBackend; tickets?: TicketsBackend };
+type Backends = { settings?: SettingsBackend; tickets?: TicketsBackend; calendar?: CalendarBackend };
 
-export function App({ auth = null, initialRole = "admin", settings, tickets }: AppProps) {
-  const backends = { settings, tickets };
+export function App({ auth = null, initialRole = "admin", settings, tickets, calendar }: AppProps) {
+  const backends = { settings, tickets, calendar };
   if (!auth) return <PreviewApp initialRole={initialRole} backends={backends} />;
   return (
     <AuthProvider client={auth}>
@@ -71,11 +74,14 @@ function WithData({ backends, user, children }: { backends: Backends; user: Curr
   const [fallback] = useState(() => ({
     settings: memorySettings().backend,
     tickets: memoryTickets().backend,
+    calendar: memoryCalendar().backend,
   }));
   return (
     <CurrentUserProvider user={user}>
       <SettingsProvider backend={backends.settings ?? fallback.settings} catalog={MODULES}>
-        <TicketsProvider backend={backends.tickets ?? fallback.tickets}>{children}</TicketsProvider>
+        <TicketsProvider backend={backends.tickets ?? fallback.tickets}>
+          <CalendarProvider backend={backends.calendar ?? fallback.calendar}>{children}</CalendarProvider>
+        </TicketsProvider>
       </SettingsProvider>
     </CurrentUserProvider>
   );

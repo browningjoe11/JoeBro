@@ -43,11 +43,23 @@ Everyone signed in and switched on can read settings; only admins change them.
 
 `functions/invite-user` sends a Supabase invite email and sets the new person's role. It uses the secret key that Supabase injects into every edge function only to send the invite (nothing to configure); checking that the caller is an active admin and setting the role run as the caller, so row-level security decides. (This project does not grant tables to `service_role`, so the function must not read tables with the secret key.) Deploy or update it from the Supabase dashboard (Edge Functions → Deploy a new function → via editor, name `invite-user`, paste `functions/invite-user/index.ts`) or with `supabase functions deploy invite-user`. Supabase's built-in email sends only a few messages per hour; a custom SMTP sender (Resend, planned) lifts that.
 
+## Calendar (chunk S8)
+
+`calendar_events` holds everything on the shared calendar: site visits, jobs and other bookings, each with a start and end time. Built for the later chunks:
+
+- `status`: `tentative` (soft, pencilled in; drawn striped) or `confirmed`.
+- `crew_id`: the crew doing the work. Crews arrive in chunk O1, which adds the foreign key.
+- `color`: optional palette name (`teal`, `blue`, `green`, `amber`, `orange`, `red`, `purple`, `slate`, the `--ev-*` tokens). Empty means the crew's color, then blue for site visits, teal for jobs, slate for other.
+- `ticket_id` links a booking to a ticket (kept as empty if the ticket is deleted); `assigned_to` is the person going.
+
+Admins, sales and operations see, add, move and delete bookings. Reviewers see them all. Technicians see only bookings assigned to them or on their tickets.
+
 ## Sample data
 
-`seed.sql` adds four example customers and five example tickets, all marked `is_example = true`. Remove them later with:
+`seed.sql` adds four example customers, five example tickets and five calendar bookings in the current week, all marked `is_example = true`. Remove them later with:
 
 ```sql
+delete from public.calendar_events where is_example;
 delete from public.tickets where is_example;
 delete from public.contacts where is_example;
 ```

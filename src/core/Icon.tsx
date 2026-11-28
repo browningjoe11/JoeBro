@@ -14,6 +14,8 @@ const PATHS = {
   plus: "M12 5v14M5 12h14",
   close: "M6 6l12 12M18 6L6 18",
   collapse: "M15 6l-6 6 6 6",
+  next: "M9 6l6 6-6 6",
+  calendar: "M8 3v4M16 3v4M4 10h16M5 5h14a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1M8 14h2M14 14h2M8 17h2",
 } as const;
 
 export type IconName = keyof typeof PATHS;
