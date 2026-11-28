@@ -53,13 +53,13 @@ describe("Settings", () => {
   it("switches a module off for everyone's menu", async () => {
     renderSettings();
     // Let the saved settings load before changing them.
-    await waitFor(() => expect(screen.getByRole("checkbox", { name: /Onsite/ })).toBeEnabled());
+    await waitFor(() => expect(screen.getByRole("checkbox", { name: /My Day/ })).toBeEnabled());
     const nav = screen.getByRole("navigation");
-    expect(within(nav).getByRole("link", { name: "Onsite" })).toBeInTheDocument();
+    expect(within(nav).getByRole("link", { name: "My Day" })).toBeInTheDocument();
     const modules = screen.getByRole("heading", { name: "Modules" }).closest("section")!;
-    await userEvent.click(within(modules).getByRole("checkbox", { name: /Onsite/ }));
+    await userEvent.click(within(modules).getByRole("checkbox", { name: /My Day/ }));
     await userEvent.click(within(modules).getByRole("button", { name: "Save modules" }));
-    await waitFor(() => expect(within(nav).queryByRole("link", { name: "Onsite" })).not.toBeInTheDocument());
+    await waitFor(() => expect(within(nav).queryByRole("link", { name: "My Day" })).not.toBeInTheDocument());
     // Dashboard and Settings can't be switched off.
     expect(within(modules).queryByRole("checkbox", { name: /Dashboard|Settings/ })).not.toBeInTheDocument();
   });

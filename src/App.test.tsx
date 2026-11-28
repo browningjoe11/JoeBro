@@ -17,7 +17,7 @@ describe("app shell", () => {
     renderAt("/");
     expect(await screen.findByRole("heading", { level: 1, name: "Dashboard" })).toBeInTheDocument();
     const nav = screen.getByRole("navigation");
-    ["Dashboard", "Calendar", "Tickets", "Contacts", "Sales", "Operations", "Onsite", "Review", "Invoicing", "Price book", "Import", "Email signature", "Settings", "Style guide"].forEach((label) =>
+    ["Dashboard", "Calendar", "Tickets", "Contacts", "Sales", "Operations", "My Day", "Review", "Invoicing", "Price book", "Import", "Email signature", "Settings", "Style guide"].forEach((label) =>
       expect(within(nav).getByRole("link", { name: label })).toBeInTheDocument(),
     );
   });
@@ -70,10 +70,10 @@ describe("sign-in", () => {
   });
 
   const menus: Record<string, string[]> = {
-    "joe@example.com": ["Dashboard", "Calendar", "Tickets", "Contacts", "Sales", "Operations", "Onsite", "Review", "Invoicing", "Price book", "Import", "Email signature", "Settings", "Style guide"],
+    "joe@example.com": ["Dashboard", "Calendar", "Tickets", "Contacts", "Sales", "Operations", "My Day", "Review", "Invoicing", "Price book", "Import", "Email signature", "Settings", "Style guide"],
     "sam@example.com": ["Dashboard", "Calendar", "Tickets", "Contacts", "Sales", "Price book", "Email signature"],
-    "olivia@example.com": ["Dashboard", "Calendar", "Tickets", "Contacts", "Operations", "Onsite", "Email signature"],
-    "tech@example.com": ["Dashboard", "Calendar", "Tickets", "Onsite", "Email signature"],
+    "olivia@example.com": ["Dashboard", "Calendar", "Tickets", "Contacts", "Operations", "My Day", "Email signature"],
+    "tech@example.com": ["Dashboard", "Calendar", "Tickets", "My Day", "Email signature"],
     "rae@example.com": ["Dashboard", "Calendar", "Tickets", "Contacts", "Review", "Invoicing", "Email signature"],
   };
 

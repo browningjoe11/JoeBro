@@ -26,6 +26,8 @@ export interface ModuleDefinition {
   order: number;
   /** Roles that see this module. */
   roles: readonly Role[];
+  /** Roles that land on this module when they open the app (otherwise the first module in their menu). */
+  homeFor?: readonly Role[];
   /** The module's page. It handles its own sub-routes below `/<id>/*`. */
   Page: ComponentType;
 }
