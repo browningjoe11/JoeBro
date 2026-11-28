@@ -155,7 +155,8 @@ function AppRoutes({ role, account, preview }: { role: Role; account?: Account; 
   useEffect(() => {
     document.title = company.name;
   }, [company.name]);
-  const home = modules[0] ? `/${modules[0].id}` : "/";
+  const landing = modules.find((m) => m.homeFor?.includes(role)) ?? modules[0];
+  const home = landing ? `/${landing.id}` : "/";
 
   return (
     <Routes>
