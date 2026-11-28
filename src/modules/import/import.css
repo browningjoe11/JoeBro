@@ -1,0 +1,11 @@
+.import-lead { margin: 0; color: var(--muted); }
+.import-steps { margin: 0; padding-left: 1.2rem; display: grid; gap: var(--sp-2); }
+.import-steps li { padding-left: var(--sp-1); }
+.import-file { display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-3); }
+.import-filename { color: var(--muted); font-size: var(--text-sm); }
+.import-counts { display: grid; grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr)); gap: var(--sp-3); margin: 0; }
+.import-count { background: var(--surface-2); border: 1px solid var(--line); border-radius: var(--radius); padding: var(--sp-3); display: grid; gap: var(--sp-1); }
+.import-count strong { font-family: var(--f-display); font-size: var(--text-xl); font-weight: 600; letter-spacing: 0.01em; }
+.import-count span { color: var(--muted); font-size: var(--text-sm); }
+.import-stages { margin: 0; color: var(--ink); }
+.import-more { margin: var(--sp-2) 0 0; color: var(--muted); font-size: var(--text-sm); }
