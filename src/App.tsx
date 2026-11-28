@@ -87,14 +87,18 @@ function PreviewApp({ initialRole, backends }: { initialRole: Role; backends: Ba
 
 /** Data the screens share once someone is in. Without real backends (preview) everything lives in memory. */
 function WithData({ backends, user, children }: { backends: Backends; user: CurrentUser; children: ReactNode }) {
-  const [fallback] = useState(() => ({
-    settings: memorySettings().backend,
-    tickets: memoryTickets().backend,
-    contacts: memoryContacts().backend,
-    calendar: memoryCalendar().backend,
-    priceBook: memoryPriceBook().backend,
-    crmImport: memoryImport().backend,
-  }));
+  const [fallback] = useState(() => {
+    // Tickets read customer details from the contacts store, as the database joins them, so edits show everywhere.
+    const contacts = memoryContacts().backend;
+    return {
+      settings: memorySettings().backend,
+      tickets: memoryTickets({ contacts }).backend,
+      contacts,
+      calendar: memoryCalendar().backend,
+      priceBook: memoryPriceBook().backend,
+      crmImport: memoryImport().backend,
+    };
+  });
   return (
     <CurrentUserProvider user={user}>
       <SettingsProvider backend={backends.settings ?? fallback.settings} catalog={MODULES}>

@@ -1,6 +1,17 @@
 import type { Stage } from "../tickets";
+import { contactDiff, propertyDiff } from "./changes";
 import { displayName, findMatches, normalizeEmail, validateContact, validateProperty } from "./match";
-import type { Contact, ContactEvent, ContactInput, ContactSummary, ContactTicket, ContactsBackend, PropertyInput, PropertyRecord } from "./types";
+import type {
+  Contact,
+  ContactChange,
+  ContactEvent,
+  ContactInput,
+  ContactSummary,
+  ContactTicket,
+  ContactsBackend,
+  PropertyInput,
+  PropertyRecord,
+} from "./types";
 
 type MemContact = Omit<Contact, "name" | "properties" | "tickets">;
 type MemTicket = Omit<ContactTicket, "site"> & { contactId: string };
@@ -95,10 +106,19 @@ function sample() {
   return { contacts, properties, tickets, events };
 }
 
-/** Customers kept in memory for preview mode and tests, following the same rules as the database. */
-export function memoryContacts(opts: { empty?: boolean } = {}) {
+/**
+ * Customers kept in memory for preview mode and tests, following the same rules as the database,
+ * including the change log. Changes are credited to actorId (the preview's stand-in person).
+ */
+export function memoryContacts(opts: { empty?: boolean; actorId?: string | null } = {}) {
   const data = opts.empty ? { contacts: [], properties: [], tickets: [], events: [] } : sample();
   const { contacts, properties, tickets, events } = data;
+  const changeLog: ContactChange[] = [];
+  const actorId = opts.actorId === undefined ? "preview-admin" : opts.actorId;
+  const logChange = (contactId: string, propertyId: string | null, changes: ContactChange["changes"]) => {
+    if (Object.keys(changes).length === 0) return;
+    changeLog.push({ id: `cc-${changeLog.length + 1}`, contactId, propertyId, actorId, changes, createdAt: new Date().toISOString() });
+  };
   let n = 0;
   const nextId = (p: string) => `${p}-new-${++n}`;
   const tick = () => new Promise((r) => setTimeout(r, 0));
@@ -184,6 +204,10 @@ export function memoryContacts(opts: { empty?: boolean } = {}) {
       const numbers = new Set(tickets.filter((t) => t.contactId === contactId).map((t) => t.number));
       return events.filter((e) => numbers.has(e.ticketNumber)).sort((a, b) => b.createdAt.localeCompare(a.createdAt));
     },
+    async changes(contactId) {
+      await tick();
+      return changeLog.filter((c) => c.contactId === contactId).reverse();
+    },
     async findDuplicates(probe, excludeId) {
       await tick();
       return findMatches(contacts.map(summary), probe, excludeId);
@@ -199,7 +223,10 @@ export function memoryContacts(opts: { empty?: boolean } = {}) {
     async update(id, input) {
       await tick();
       check(validateContact(input));
-      Object.assign(find(id), clean(input), { updatedAt: new Date().toISOString() });
+      const c = find(id);
+      const next = clean(input);
+      logChange(id, null, contactDiff(c, next));
+      Object.assign(c, next, { updatedAt: new Date().toISOString() });
     },
     async addProperty(contactId, input) {
       await tick();
@@ -209,7 +236,9 @@ export function memoryContacts(opts: { empty?: boolean } = {}) {
       const isPrimary = input.isPrimary || theirs.length === 0;
       if (isPrimary) theirs.forEach((p) => (p.isPrimary = false));
       const id = nextId("p");
-      properties.push({ ...cleanProperty(input), id, contactId, isPrimary });
+      const p = { ...cleanProperty(input), id, contactId, isPrimary };
+      properties.push(p);
+      if (theirs.length > 0) logChange(contactId, id, { site_added: { from: null, to: `${p.street}, ${p.city}` } });
       return id;
     },
     async updateProperty(id, input) {
@@ -218,7 +247,9 @@ export function memoryContacts(opts: { empty?: boolean } = {}) {
       if (!p) throw new Error("That property no longer exists.");
       check(validateProperty(input));
       if (input.isPrimary) properties.filter((x) => x.contactId === p.contactId).forEach((x) => (x.isPrimary = false));
-      Object.assign(p, cleanProperty(input));
+      const next = cleanProperty(input);
+      logChange(p.contactId, id, propertyDiff(p, next));
+      Object.assign(p, next);
     },
   };
   return { backend };

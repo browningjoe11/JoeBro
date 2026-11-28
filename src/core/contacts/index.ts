@@ -1,4 +1,5 @@
 export { ContactsProvider, useContacts } from "./ContactsProvider";
+export * from "./changes";
 export * from "./match";
 export { memoryContacts } from "./memoryContacts";
 export { supabaseContacts } from "./supabaseContacts";
