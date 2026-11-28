@@ -1,20 +1,5 @@
-import { ComingSoon, ModulePage } from "../../core/ModulePage";
 import { ALL_ROLES, type ModuleDefinition } from "../../core/modules";
-
-function DashboardPage() {
-  return (
-    <ModulePage title="Dashboard" description="What each ticket needs next to keep moving.">
-      <ComingSoon
-        chunk="F7"
-        items={[
-          "Next actions for your role",
-          "Ticket counts by stage",
-          "Overdue follow-ups and invoices",
-        ]}
-      />
-    </ModulePage>
-  );
-}
+import { Dashboard } from "./Dashboard";
 
 export const dashboardModule: ModuleDefinition = {
   id: "dashboard",
@@ -24,5 +9,5 @@ export const dashboardModule: ModuleDefinition = {
   group: "overview",
   order: 10,
   roles: ALL_ROLES,
-  Page: DashboardPage,
+  Page: Dashboard,
 };

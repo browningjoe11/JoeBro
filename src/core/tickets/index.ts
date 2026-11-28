@@ -3,3 +3,4 @@ export * from "./stages";
 export { supabaseTickets } from "./supabaseTickets";
 export { TicketsProvider, useTickets } from "./TicketsProvider";
 export * from "./types";
+export * from "./waiting";

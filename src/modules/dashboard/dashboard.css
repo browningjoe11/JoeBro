@@ -1,0 +1,40 @@
+/* Dashboard (F7). Colors, sizes and spacing all come from tokens.css. */
+.dash-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 220px)); gap: var(--sp-3); }
+.dash-stat { display: grid; gap: var(--sp-1); padding: var(--sp-3) var(--sp-4); background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); color: var(--muted); font-size: var(--text-sm); }
+.dash-stat-num { font-family: var(--f-display); font-size: var(--text-3xl); font-weight: 600; line-height: 1; color: var(--ink); }
+.dash-stat--bad { border-color: var(--bad); background: var(--bad-soft); }
+.dash-stat--bad .dash-stat-num { color: var(--bad); }
+
+.todo-cell, .due-cell, .age-cell { display: grid; gap: 2px; justify-items: start; }
+.todo-cell { min-width: 150px; }
+.todo-cell small, .age-cell small, .muted { color: var(--muted); font-size: var(--text-sm); }
+.due-cell small.overdue { font-size: var(--text-sm); }
+
+.stage-counts { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: var(--sp-2); }
+.stage-count a { display: grid; gap: 2px; height: 100%; box-sizing: border-box; padding: var(--sp-3); border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface-2); color: var(--ink); text-decoration: none; }
+.stage-count a:hover { border-color: var(--line-strong); background: var(--surface-3); }
+.stage-count a:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
+.stage-count--mine a { border-color: var(--brand); background: var(--brand-soft); }
+.stage-count-num { font-family: var(--f-display); font-size: var(--text-2xl); font-weight: 600; line-height: 1; }
+.stage-count-name { font-weight: 600; }
+.stage-count small { color: var(--muted); font-size: var(--text-xs); }
+.stage-counts-foot { margin: var(--sp-3) 0 0; color: var(--muted); font-size: var(--text-sm); display: flex; align-items: center; gap: var(--sp-1); }
+
+@media (max-width: 600px) {
+  .dash-stats { grid-template-columns: 1fr 1fr; }
+  .stage-counts { grid-template-columns: 1fr 1fr; }
+}
+
+/* Next actions: table on PC, stacked cards on phones. */
+.next-cards { display: none; list-style: none; margin: 0; padding: 0; gap: var(--sp-2); }
+.next-card { display: grid; gap: var(--sp-2); padding: var(--sp-3); border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); }
+.next-card--overdue { border-color: var(--bad); }
+.next-card-top { display: flex; justify-content: space-between; align-items: flex-start; gap: var(--sp-2); }
+.next-card-top .due-cell { justify-items: end; }
+.next-card .ticket-cell { min-width: 0; }
+.next-card-foot { display: flex; justify-content: space-between; align-items: center; gap: var(--sp-2); }
+.next-card-foot .age-cell { grid-auto-flow: column; align-items: center; gap: var(--sp-2); }
+@media (max-width: 600px) {
+  .next-table { display: none; }
+  .next-cards { display: grid; }
+}
