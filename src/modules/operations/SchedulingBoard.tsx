@@ -35,6 +35,7 @@ import {
 import { STAGE_LABELS, useTickets, type Person, type TicketSummary } from "../../core/tickets";
 import { Badge, Button, Section } from "../../ui";
 import { EventSheet, type SheetState } from "../calendar/EventSheet";
+import { ViewSwitch } from "./ViewSwitch";
 import "./board.css";
 
 /** Roles that may plan the board (the database lets the same roles change bookings and these ticket stages). */
@@ -269,6 +270,7 @@ export function SchedulingBoard() {
           </h2>
         </div>
         <div className="cal-actions">
+          <ViewSwitch view="board" />
           <Link className="btn btn--secondary btn--sm" to={`/calendar?view=week&date=${mondayKey}`}>
             Open in calendar
           </Link>

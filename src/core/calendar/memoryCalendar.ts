@@ -2,12 +2,12 @@ import { addDays, startOfWeek } from "./time";
 import type { CalendarBackend, CalendarEvent, NewCalendarEvent } from "./types";
 
 /** Ticket details the in-memory calendar can show for linked events (matches the sample tickets). */
-const SAMPLE_TICKETS: Record<string, { number: number; title: string; site: string }> = {
-  t1: { number: 1001, title: "Rebuild 12×16 back deck", site: "118 Fox Hall Dr, Dover" },
-  t2: { number: 1002, title: "Replace storm-damaged siding", site: "42 NW Front St, Milford" },
-  t3: { number: 1003, title: "Bathroom refresh at rental", site: "27 Delaware Ave, Rehoboth Beach" },
-  t4: { number: 1004, title: "Fence repair", site: "310 Walnut Shade Rd, Camden" },
-  t5: { number: 1005, title: "Screened porch addition", site: "9 Pilottown Rd, Lewes" },
+const SAMPLE_TICKETS: Record<string, { number: number; title: string; propertyId: string; street: string; city: string; zip: string }> = {
+  t1: { number: 1001, title: "Rebuild 12×16 back deck", propertyId: "p1", street: "118 Fox Hall Dr", city: "Dover", zip: "19904" },
+  t2: { number: 1002, title: "Replace storm-damaged siding", propertyId: "p2", street: "42 NW Front St", city: "Milford", zip: "19963" },
+  t3: { number: 1003, title: "Bathroom refresh at rental", propertyId: "p4", street: "27 Delaware Ave", city: "Rehoboth Beach", zip: "19971" },
+  t4: { number: 1004, title: "Fence repair", propertyId: "p5", street: "310 Walnut Shade Rd", city: "Camden", zip: "19934" },
+  t5: { number: 1005, title: "Screened porch addition", propertyId: "p3", street: "9 Pilottown Rd", city: "Lewes", zip: "19958" },
 };
 
 /** The sample remodel crew in memoryCrews (supabase/seed.sql uses a uuid). */
@@ -22,7 +22,7 @@ function sample(): CalendarEvent[] {
     return d.toISOString();
   };
   const base = { crewId: null, assignedTo: null, color: null, isExample: true, notes: "" } as const;
-  const rows: (Omit<CalendarEvent, "ticketLabel" | "ticketNumber" | "site"> & { ticketId: string | null })[] = [
+  const rows: (Omit<CalendarEvent, "ticketLabel" | "ticketNumber" | "site" | "place"> & { ticketId: string | null })[] = [
     { ...base, id: "ev1", kind: "other", status: "confirmed", title: "Supplier pickup at lumber yard", start: at(0, 7), end: at(0, 8), ticketId: null, notes: "Composite boards for the deck." },
     { ...base, id: "ev2", kind: "site_visit", status: "confirmed", title: "Site visit: storm-damaged siding", start: at(1, 9), end: at(1, 10), ticketId: "t2", notes: "Measure the north wall." },
     { ...base, id: "ev3", kind: "job", status: "tentative", title: "Bathroom refresh at rental", start: at(2, 8), end: at(2, 16), ticketId: "t3", crewId: REMODEL_CREW, notes: "Pencilled in, waiting on vanity delivery." },
@@ -32,9 +32,16 @@ function sample(): CalendarEvent[] {
   return rows.map(withTicket);
 }
 
-function withTicket<T extends { ticketId: string | null }>(e: T): T & Pick<CalendarEvent, "ticketLabel" | "ticketNumber" | "site"> {
+function withTicket<T extends { ticketId: string | null }>(e: T): T & Pick<CalendarEvent, "ticketLabel" | "ticketNumber" | "site" | "place"> {
   const t = e.ticketId ? SAMPLE_TICKETS[e.ticketId] : undefined;
-  return { ...e, ticketLabel: t ? `#${t.number} ${t.title}` : "", ticketNumber: t?.number ?? null, site: t?.site ?? "" };
+  return {
+    ...e,
+    ticketLabel: t ? `#${t.number} ${t.title}` : "",
+    ticketNumber: t?.number ?? null,
+    site: t ? `${t.street}, ${t.city}` : "",
+    // Like a fresh database row: the address is known, its map position is looked up by the map.
+    place: t ? { propertyId: t.propertyId, street: t.street, city: t.city, state: "DE", zip: t.zip, lat: null, lng: null } : null,
+  };
 }
 
 function check(e: { title: string; start: string; end: string }) {

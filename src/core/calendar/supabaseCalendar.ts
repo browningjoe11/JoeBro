@@ -6,7 +6,7 @@ const s = (v: unknown) => (typeof v === "string" ? v : "");
 
 const COLUMNS =
   "id, kind, status, title, starts_at, ends_at, ticket_id, crew_id, assigned_to, color, notes, is_example, " +
-  "ticket:tickets(number, title, property:properties(street, city))";
+  "ticket:tickets(number, title, property:properties(id, street, city, state, zip, latitude, longitude))";
 
 function fail(error: { message: string } | null): void {
   if (!error) return;
@@ -31,6 +31,17 @@ function toEvent(r: Row): CalendarEvent {
     ticketNumber: t ? Number(t.number) : null,
     ticketLabel: t ? `#${t.number} ${s(t.title)}` : "",
     site: p ? [s(p.street), s(p.city)].filter(Boolean).join(", ") : "",
+    place: p
+      ? {
+          propertyId: s(p.id),
+          street: s(p.street),
+          city: s(p.city),
+          state: s(p.state),
+          zip: s(p.zip),
+          lat: typeof p.latitude === "number" ? p.latitude : null,
+          lng: typeof p.longitude === "number" ? p.longitude : null,
+        }
+      : null,
     crewId: (r.crew_id as string) ?? null,
     assignedTo: (r.assigned_to as string) ?? null,
     color: (r.color as EventColor) ?? null,
