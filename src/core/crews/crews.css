@@ -1,0 +1,25 @@
+/* Crew colors (chunk O1). Colors come from the shared palette classes .ev--<name>, which set --ev and --ev-soft. */
+.crew-chip {
+  display: inline-flex; align-items: center; gap: var(--sp-2); max-width: 100%;
+  padding: 2px var(--sp-2) 2px 6px; border-radius: 999px;
+  background: var(--ev-soft); color: var(--ink); border: 1px solid var(--ev);
+  font-size: var(--text-sm); font-weight: 600; line-height: 1.4; white-space: nowrap;
+}
+.crew-dot { flex: none; width: 10px; height: 10px; border-radius: 50%; background: var(--ev); }
+.crew-chip--retired { opacity: 0.7; font-weight: 400; }
+.crew-chip-note { color: var(--muted); font-weight: 400; }
+
+.color-picker { border: 0; margin: 0; padding: 0; min-width: 0; display: grid; gap: var(--sp-2); }
+.color-picker legend { padding: 0; margin-bottom: var(--sp-1); font-weight: 600; font-size: var(--text-sm); }
+.color-picker-swatches { display: flex; flex-wrap: wrap; gap: var(--sp-2); }
+.color-swatch {
+  position: relative; display: inline-flex; align-items: center; gap: var(--sp-2);
+  min-height: var(--control-h); padding: 0 var(--sp-3) 0 var(--sp-2); border-radius: 6px;
+  border: 1px solid var(--line-strong); background: var(--surface); cursor: pointer; font-size: var(--text-sm);
+}
+.color-swatch input { position: absolute; opacity: 0; inset: 0; margin: 0; cursor: pointer; }
+.color-swatch-dot { width: 18px; height: 18px; border-radius: 50%; background: var(--ev); border: 3px solid var(--ev-soft); box-sizing: content-box; }
+.color-swatch:has(input:checked) { border-color: var(--ev); box-shadow: 0 0 0 2px var(--ev); background: var(--ev-soft); font-weight: 600; }
+.color-swatch:has(input:focus-visible) { outline: 3px solid var(--brand-soft); outline-offset: 2px; }
+.crew-preview { margin: 0; display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-2); color: var(--muted); font-size: var(--text-sm); }
+.cal-crews { display: inline-flex; flex-wrap: wrap; gap: var(--sp-2); }

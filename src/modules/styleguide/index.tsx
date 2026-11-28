@@ -1,10 +1,11 @@
 import { useState } from "react";
-import { EVENT_COLORS } from "../../core/calendar";
+import { EVENT_COLORS, type EventColor } from "../../core/calendar";
+import { ColorPicker, CrewChip } from "../../core/crews";
 import { Icon } from "../../core/Icon";
 import { ModulePage } from "../../core/ModulePage";
 import type { ModuleDefinition } from "../../core/modules";
 import { describePrice, PriceItemPicker, type PriceItem } from "../../core/pricebook";
-import { Badge, Button, DataTable, InfoTip, Section, SelectField, Sheet, TextAreaField, TextField, type Column, type Tone } from "../../ui";
+import { Badge, Button, CheckChips, DataTable, InfoTip, Section, SelectField, Sheet, TextAreaField, TextField, type Column, type Tone } from "../../ui";
 
 const SWATCHES = [
   ["--brand", "Brand teal", "Main actions, active menu item"],
@@ -58,6 +59,8 @@ const MATERIAL_COLUMNS: Column<MaterialRow>[] = [
 function StyleGuidePage() {
   const [sheetOpen, setSheetOpen] = useState(false);
   const [picked, setPicked] = useState<PriceItem | null>(null);
+  const [crewColor, setCrewColor] = useState<EventColor>("blue");
+  const [chipDays, setChipDays] = useState<string[]>(["Mon", "Tue", "Wed", "Thu", "Fri"]);
   const materialsTotal = EXAMPLE_MATERIALS.reduce((sum, r) => sum + r.qty * r.cost, 0);
 
   return (
@@ -201,6 +204,29 @@ function StyleGuidePage() {
       >
         <PriceItemPicker kind="material" onPick={setPicked} />
         <p className="pb-muted">{picked ? `Picked: ${picked.name}, ${describePrice(picked)}` : "Nothing picked yet."}</p>
+      </Section>
+
+      <Section
+        title="Crew colors"
+        storageKey="styleguide.crews"
+        info="Use CrewChip wherever a crew is named, so its color travels with it. ColorPicker picks one palette color and flags colors other crews already use."
+      >
+        <div className="row">
+          <CrewChip name="Deck crew" color="teal" />
+          <CrewChip name="Siding crew" color="orange" />
+          <CrewChip name="Remodel crew" color="purple" />
+          <CrewChip name="Old crew" color="slate" retired />
+        </div>
+        <ColorPicker label="Crew color" value={crewColor} onChange={setCrewColor} taken={{ teal: "Deck crew" }} />
+      </Section>
+
+      <Section title="Check chips" storageKey="styleguide.chips" info="Pick several short choices, like a crew's skills or working days. Each chip is a checkbox.">
+        <CheckChips
+          label="Working days"
+          options={["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((d) => ({ value: d, label: d }))}
+          value={chipDays}
+          onChange={setChipDays}
+        />
       </Section>
 
       <Section title="Bubble notes" storageKey="styleguide.tips" defaultOpen={false}>
