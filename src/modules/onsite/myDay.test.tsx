@@ -6,6 +6,7 @@ import { addDays, CalendarProvider, memoryCalendar, startOfWeek, toDateKey } fro
 import { ContactsProvider, memoryContacts } from "../../core/contacts";
 import { CrewsProvider, memoryCrews, SAMPLE_CREW_IDS } from "../../core/crews";
 import { CurrentUserProvider } from "../../core/currentUser";
+import { memoryPhotos, PhotosProvider } from "../../core/photos";
 import { memoryTickets, TicketsProvider } from "../../core/tickets";
 import { MyDay } from "./MyDay";
 
@@ -34,7 +35,9 @@ async function openAsTech(date: Date, linked = true) {
           <ContactsProvider backend={contacts}>
             <CrewsProvider backend={crews.backend}>
               <CalendarProvider backend={memoryCalendar().backend}>
-                <MyDay />
+                <PhotosProvider backend={memoryPhotos().backend}>
+                  <MyDay />
+                </PhotosProvider>
               </CalendarProvider>
             </CrewsProvider>
           </ContactsProvider>

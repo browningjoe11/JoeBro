@@ -139,3 +139,9 @@ Until both are set, the action skips with a warning.
 ## Testing
 
 `npm test` loads every migration and the seed into an in-memory Postgres (PGlite) and checks the rules: stage moves, required lost reason, phone and email cleanup, one primary property, history logging, RLS on every table, and (in `tests/roles.test.ts`) what each role can see and change. Add a migration as a new file; never edit one that has already been applied.
+
+## Before and after photos (chunk M3)
+
+`ticket_photos` holds one row per photo on a ticket: `tag` (before or after), an optional caption, the picture's size, and where its two files sit in the **private** Storage bucket `ticket-photos`: `<ticket id>/<photo id>.jpg` (shrunk on the phone to at most 1600px) and `<ticket id>/<photo id>-thumb.jpg`. The bucket takes JPEG or WebP up to 2 MB. The app shows files through signed links that expire after an hour; nothing is on a public address.
+
+Anyone who can see the ticket (technicians: their own or their crew's jobs) sees its photos and adds new ones. Whoever took a photo, and admins and operations, can re-tag, caption or remove it. Storage checks the same rules from the file's folder name. Deleting a ticket removes its photo rows; the files stay in Storage until cleared by hand.
