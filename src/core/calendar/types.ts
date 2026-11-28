@@ -33,7 +33,7 @@ export interface CalendarEvent {
   ticketNumber: number | null;
   /** Job-site address from the ticket. */
   site: string;
-  /** Crew doing the work (crews arrive in chunk O1). */
+  /** Crew doing the work. The booking takes the crew's color unless `color` is set. */
   crewId: string | null;
   assignedTo: string | null;
   /** Override color; null = crew color, then the kind's color. */
@@ -66,7 +66,7 @@ export interface CalendarBackend {
   remove(id: string): Promise<void>;
 }
 
-/** The color an event is drawn in. `crewColor` comes from the crew once crews exist (O1). */
+/** The color an event is drawn in: its own color, then its crew's (see useCrews().colorOf), then its kind's. */
 export function eventColor(e: Pick<CalendarEvent, "color" | "kind">, crewColor?: EventColor | null): EventColor {
   return e.color ?? crewColor ?? KIND_COLORS[e.kind];
 }

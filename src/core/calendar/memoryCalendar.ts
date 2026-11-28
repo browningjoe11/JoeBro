@@ -10,6 +10,9 @@ const SAMPLE_TICKETS: Record<string, { number: number; title: string; site: stri
   t5: { number: 1005, title: "Screened porch addition", site: "9 Pilottown Rd, Lewes" },
 };
 
+/** The sample remodel crew in memoryCrews (supabase/seed.sql uses a uuid). */
+const REMODEL_CREW = "crew-remodel";
+
 /** Same bookings as supabase/seed.sql, placed in the current week. */
 function sample(): CalendarEvent[] {
   const monday = startOfWeek(new Date());
@@ -22,8 +25,8 @@ function sample(): CalendarEvent[] {
   const rows: (Omit<CalendarEvent, "ticketLabel" | "ticketNumber" | "site"> & { ticketId: string | null })[] = [
     { ...base, id: "ev1", kind: "other", status: "confirmed", title: "Supplier pickup at lumber yard", start: at(0, 7), end: at(0, 8), ticketId: null, notes: "Composite boards for the deck." },
     { ...base, id: "ev2", kind: "site_visit", status: "confirmed", title: "Site visit: storm-damaged siding", start: at(1, 9), end: at(1, 10), ticketId: "t2", notes: "Measure the north wall." },
-    { ...base, id: "ev3", kind: "job", status: "tentative", title: "Bathroom refresh at rental", start: at(2, 8), end: at(2, 16), ticketId: "t3", notes: "Pencilled in, waiting on vanity delivery." },
-    { ...base, id: "ev4", kind: "job", status: "tentative", title: "Bathroom refresh at rental", start: at(3, 8), end: at(3, 12), ticketId: "t3" },
+    { ...base, id: "ev3", kind: "job", status: "tentative", title: "Bathroom refresh at rental", start: at(2, 8), end: at(2, 16), ticketId: "t3", crewId: REMODEL_CREW, notes: "Pencilled in, waiting on vanity delivery." },
+    { ...base, id: "ev4", kind: "job", status: "tentative", title: "Bathroom refresh at rental", start: at(3, 8), end: at(3, 12), ticketId: "t3", crewId: REMODEL_CREW },
     { ...base, id: "ev5", kind: "site_visit", status: "confirmed", title: "Site visit: fence repair", start: at(3, 13), end: at(3, 14), ticketId: "t4" },
   ];
   return rows.map(withTicket);

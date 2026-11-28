@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import {
   addDays,
+  eventColor,
   formatRangeTitle,
   fromDateKey,
   startOfDay,
@@ -13,6 +14,7 @@ import {
   type GridColumn,
   type NewCalendarEvent,
 } from "../../core/calendar";
+import { CrewChip, useCrews } from "../../core/crews";
 import { Icon } from "../../core/Icon";
 import { ModulePage } from "../../core/ModulePage";
 import { useCurrentUser } from "../../core/currentUser";
@@ -37,6 +39,7 @@ export function CalendarPage() {
   const ticketsApi = useTickets();
   const { id: userId, role } = useCurrentUser();
   const editable = canEditCalendar(role);
+  const { crews, crewById, colorOf } = useCrews();
   const [params, setParams] = useSearchParams();
 
   const view: View = params.get("view") === "day" || params.get("view") === "week" ? (params.get("view") as View) : narrowScreen() ? "day" : "week";
@@ -146,6 +149,8 @@ export function CalendarPage() {
   };
 
   const count = events.length;
+  // Crews in the legend: every active crew, plus a retired one that still has bookings in view.
+  const legendCrews = crews.filter((c) => c.active || events.some((e) => e.crewId === c.id));
 
   return (
     <ModulePage title="Calendar" description="Site visits and jobs on one shared calendar.">
@@ -199,6 +204,13 @@ export function CalendarPage() {
         <span className="cal-key">
           <i className="ev-swatch ev--teal ev--tentative" /> Tentative (soft)
         </span>
+        {legendCrews.length > 0 && (
+          <span className="cal-crews" aria-label="Crew colors">
+            {legendCrews.map((c) => (
+              <CrewChip key={c.id} name={c.name} color={c.color} retired={!c.active} />
+            ))}
+          </span>
+        )}
         <span className="cal-count muted">{loading ? "Loading…" : `${count} booking${count === 1 ? "" : "s"}`}</span>
         {editable && <span className="cal-hint muted">Drag on empty time to book it. Drag a booking to move it, or its bottom edge to change the length. On a phone, tap empty time to book, and press and hold a booking before dragging it.</span>}
       </div>
@@ -210,6 +222,8 @@ export function CalendarPage() {
         onCreate={(start, end) => setSheet({ mode: "new", start, end })}
         onOpen={(event) => setSheet({ mode: "edit", event })}
         onChange={(event, times) => void change(event, times)}
+        colorFor={(e) => eventColor(e, colorOf(e.crewId))}
+        detailFor={(e) => crewById(e.crewId)?.name}
       />
 
       <EventSheet state={sheet} editable={editable} people={people} onClose={() => setSheet(null)} onSave={save} onDelete={remove} />

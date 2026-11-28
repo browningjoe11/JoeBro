@@ -5,6 +5,7 @@ import { App } from "./App";
 import { supabaseAuth } from "./core/auth";
 import { supabaseCalendar } from "./core/calendar";
 import { supabaseContacts } from "./core/contacts";
+import { supabaseCrews } from "./core/crews";
 import { supabasePriceBook } from "./core/pricebook";
 import { supabaseSettings } from "./core/settings";
 import { supabaseTickets } from "./core/tickets";
@@ -22,11 +23,12 @@ const contacts = supabase ? supabaseContacts(supabase) : undefined;
 const calendar = supabase ? supabaseCalendar(supabase) : undefined;
 const priceBook = supabase ? supabasePriceBook(supabase) : undefined;
 const crmImport = supabase ? supabaseImport(supabase) : undefined;
+const crews = supabase ? supabaseCrews(supabase) : undefined;
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <BrowserRouter>
-      <App auth={auth} settings={settings} tickets={tickets} contacts={contacts} calendar={calendar} priceBook={priceBook} crmImport={crmImport} />
+      <App auth={auth} settings={settings} tickets={tickets} contacts={contacts} calendar={calendar} priceBook={priceBook} crmImport={crmImport} crews={crews} />
     </BrowserRouter>
   </StrictMode>,
 );

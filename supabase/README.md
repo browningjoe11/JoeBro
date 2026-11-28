@@ -66,12 +66,21 @@ The old Joebros CRM is a single-page Claude artifact. Its customers are not in t
 
 The artifact's data lives in Claude artifact storage (or that browser, if the page saved it locally). Download it from the artifact's Export or Backup button before unpublishing the artifact. The Import screen has the field list and an example file of fake customers.
 
+## Crews and technicians (chunk O1)
+
+- `crews`: name (unique, ignoring case), `color` from the shared palette (teal, blue, green, amber, orange, red, purple, slate, the same names as the calendar's `--ev-<name>` tokens), `skills` (trade labels), `work_days` (0 = Sunday … 6 = Saturday, default Monday to Friday), `day_start` and `day_end` (default 7:00 to 3:30), `notes`, `active`, `sort`.
+- `technicians`: `full_name`, phone, email, optional `crew_id` (they work the crew's hours), optional `profile_id` linking their app login (one login per tech), `skills`, `active`.
+- `calendar_events.crew_id` now points at `crews`. A booking with no color of its own is drawn in its crew's color. Deleting a crew leaves its bookings and techs without a crew; normally crews are retired (`active = false`) instead.
+- Everyone signed in and switched on can read crews and techs. Admins and operations add and change them; only admins delete.
+
 ## Sample data
 
-`seed.sql` adds four example customers, five example tickets and five calendar bookings in the current week, all marked `is_example = true`. `npm test` loads it into an in-memory database. The Database action does not load it into the live project. Remove example rows later with:
+`seed.sql` adds four example customers, five example tickets, five calendar bookings in the current week, three crews and five techs, all marked `is_example = true`. `npm test` loads it into an in-memory database. The Database action does not load it into the live project. Remove example rows later with:
 
 ```sql
 delete from public.calendar_events where is_example;
+delete from public.technicians where is_example;
+delete from public.crews where is_example;
 delete from public.tickets where is_example;
 delete from public.contacts where is_example;
 ```

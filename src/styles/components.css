@@ -201,3 +201,18 @@ button.tg-daylink:hover { background: var(--surface-3); }
   .tg { --gutter: 52px; --col-min: 92px; }
   .tg-scroll { max-height: max(420px, calc(100dvh - 260px)); }
 }
+
+/* ---------- Check chips (pick several short choices, e.g. skills or weekdays) ---------- */
+.check-chips { border: 0; margin: 0; padding: 0; min-width: 0; display: grid; gap: var(--sp-2); }
+.check-chips legend { display: flex; align-items: center; gap: var(--sp-2); padding: 0; margin-bottom: var(--sp-1); font-weight: 600; font-size: var(--text-sm); }
+.check-chips-list { display: flex; flex-wrap: wrap; gap: var(--sp-2); }
+.check-chip { position: relative; display: inline-flex; cursor: pointer; }
+.check-chip input { position: absolute; opacity: 0; inset: 0; margin: 0; cursor: pointer; }
+.check-chip span {
+  display: inline-flex; align-items: center; min-height: 36px; padding: 0 var(--sp-3);
+  border: 1px solid var(--line-strong); border-radius: 999px; background: var(--surface); font-size: var(--text-sm);
+}
+.check-chip input:checked + span { background: var(--brand-soft); border-color: var(--brand); color: var(--ink); font-weight: 600; }
+.check-chip input:checked + span::before { content: "✓"; margin-right: var(--sp-1); color: var(--brand); }
+.check-chip input:focus-visible + span { outline: 3px solid var(--brand-soft); outline-offset: 2px; }
+.check-chips:disabled .check-chip { cursor: not-allowed; opacity: 0.7; }

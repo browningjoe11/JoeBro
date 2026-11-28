@@ -39,6 +39,8 @@ export interface TimeGridProps {
   onChange?: (event: CalendarEvent, times: { start: Date; end: Date }, column: GridColumn) => void;
   /** Color for an event; defaults to its own color, then its kind's. */
   colorFor?: (event: CalendarEvent) => EventColor;
+  /** Short extra line for an event, such as its crew's name. Read out and shown under the time when there's room. */
+  detailFor?: (event: CalendarEvent) => string | undefined;
   /** Height of one hour in pixels. */
   hourHeight?: number;
   /** Hour scrolled into view when the grid first appears. */
@@ -71,6 +73,7 @@ export function TimeGrid({
   onOpen,
   onChange,
   colorFor = (e) => eventColor(e),
+  detailFor,
   hourHeight = 48,
   startHour = 7,
 }: TimeGridProps) {
@@ -306,7 +309,8 @@ export function TimeGrid({
                 const short = minutes <= 45;
                 const medium = !short && minutes <= 90;
                 const isDragged = dragging?.event.id === ev.id;
-                const label = `${ev.title}, ${formatTimeRange(start, end)}${ev.status === "tentative" ? ", tentative" : ""}`;
+                const detail = detailFor?.(ev);
+                const label = `${ev.title}, ${formatTimeRange(start, end)}${ev.status === "tentative" ? ", tentative" : ""}${detail ? `, ${detail}` : ""}`;
                 return (
                   <div
                     key={ev.id}
@@ -341,6 +345,7 @@ export function TimeGrid({
                   >
                     <span className="ev-title">{ev.title}</span>
                     <span className="ev-time">{formatTimeRange(start, end)}</span>
+                    {!short && !medium && detail && <span className="ev-meta">{detail}</span>}
                     {!short && !medium && ev.site && <span className="ev-meta">{ev.site}</span>}
                     {editable && p.endsToday && (
                       <span

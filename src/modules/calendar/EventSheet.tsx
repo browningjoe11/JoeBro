@@ -13,21 +13,11 @@ import {
   type EventStatus,
   type NewCalendarEvent,
 } from "../../core/calendar";
+import { COLOR_NAMES, CrewChip, useCrews } from "../../core/crews";
 import { useTickets, type Person, type TicketSummary } from "../../core/tickets";
 import { Button, SelectField, Sheet, TextAreaField, TextField } from "../../ui";
 
 export type SheetState = { mode: "new"; start: Date; end: Date } | { mode: "edit"; event: CalendarEvent } | null;
-
-const COLOR_NAMES: Record<EventColor, string> = {
-  teal: "Teal",
-  blue: "Blue",
-  green: "Green",
-  amber: "Amber",
-  orange: "Orange",
-  red: "Red",
-  purple: "Purple",
-  slate: "Slate",
-};
 
 interface Draft {
   title: string;
@@ -37,6 +27,7 @@ interface Draft {
   startTime: string;
   endTime: string;
   ticketId: string;
+  crewId: string;
   assignedTo: string;
   color: EventColor | "";
   notes: string;
@@ -52,6 +43,7 @@ function draftFrom(state: NonNullable<SheetState>): Draft {
       startTime: toTimeValue(state.start),
       endTime: toTimeValue(state.end),
       ticketId: "",
+      crewId: "",
       assignedTo: "",
       color: "",
       notes: "",
@@ -67,6 +59,7 @@ function draftFrom(state: NonNullable<SheetState>): Draft {
     startTime: toTimeValue(s),
     endTime: toTimeValue(new Date(e.end)),
     ticketId: e.ticketId ?? "",
+    crewId: e.crewId ?? "",
     assignedTo: e.assignedTo ?? "",
     color: e.color ?? "",
     notes: e.notes,
@@ -101,6 +94,7 @@ interface EventSheetProps {
 /** Add or edit one booking. Read-only for roles that can't change the calendar. */
 export function EventSheet({ state, editable, people, onClose, onSave, onDelete }: EventSheetProps) {
   const ticketsApi = useTickets();
+  const { crews, crewById } = useCrews();
   const [draft, setDraft] = useState<Draft | null>(null);
   const [tickets, setTickets] = useState<TicketSummary[]>([]);
   const [error, setError] = useState("");
@@ -152,6 +146,7 @@ export function EventSheet({ state, editable, people, onClose, onSave, onDelete 
           start: times.start.toISOString(),
           end: times.end.toISOString(),
           ticketId: draft.ticketId || null,
+          crewId: draft.crewId || null,
           assignedTo: draft.assignedTo || null,
           color: draft.color || null,
           notes: draft.notes,
@@ -178,6 +173,9 @@ export function EventSheet({ state, editable, people, onClose, onSave, onDelete 
   // Open tickets to link, plus the one already linked even if it has closed since.
   const ticketOptions = tickets.filter((t) => !["lost", "paid"].includes(t.stage) || t.id === draft.ticketId);
   const activePeople = people.filter((p) => p.active || p.id === draft.assignedTo);
+  const crewOptions = crews.filter((c) => c.active || c.id === draft.crewId);
+  const crew = crewById(draft.crewId);
+  const autoColor = crew?.color ?? KIND_COLORS[draft.kind];
 
   return (
     <Sheet
@@ -253,6 +251,27 @@ export function EventSheet({ state, editable, people, onClose, onSave, onDelete 
             {existing.site && <span className="muted"> · {existing.site}</span>}
           </p>
         )}
+        <SelectField
+          label="Crew"
+          value={draft.crewId}
+          onChange={(e) => set("crewId", e.target.value)}
+          disabled={ro}
+          hint={crews.length === 0 && editable ? "Add crews in Settings to color bookings by crew." : undefined}
+        >
+          <option value="">No crew</option>
+          {crewOptions.map((c) => (
+            <option key={c.id} value={c.id}>
+              {c.name}
+              {c.active ? "" : " (retired)"}
+            </option>
+          ))}
+        </SelectField>
+        {crew && (
+          <p className="crew-preview">
+            <CrewChip name={crew.name} color={crew.color} retired={!crew.active} />
+            {draft.color && draft.color !== crew.color ? <span>This booking uses its own color instead.</span> : null}
+          </p>
+        )}
         <div className="cal-form-pair">
           <SelectField label="Assigned to" value={draft.assignedTo} onChange={(e) => set("assignedTo", e.target.value)} disabled={ro}>
             <option value="">Nobody yet</option>
@@ -267,9 +286,12 @@ export function EventSheet({ state, editable, people, onClose, onSave, onDelete 
             value={draft.color}
             onChange={(e) => set("color", e.target.value as EventColor | "")}
             disabled={ro}
-            info="Automatic uses the crew's color once crews are set up, otherwise blue for site visits, teal for jobs and slate for other bookings."
+            info="Automatic uses the crew's color. With no crew it's blue for site visits, teal for jobs and slate for other bookings."
           >
-            <option value="">Automatic ({COLOR_NAMES[KIND_COLORS[draft.kind]].toLowerCase()})</option>
+            <option value="">
+              Automatic ({COLOR_NAMES[autoColor].toLowerCase()}
+              {crew ? `, ${crew.name}` : ""})
+            </option>
             {EVENT_COLORS.map((c) => (
               <option key={c} value={c}>
                 {COLOR_NAMES[c]}

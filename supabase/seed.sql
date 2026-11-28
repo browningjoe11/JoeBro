@@ -1,6 +1,6 @@
 -- Sample data so every screen has something to show while it's being built.
 -- Every row is marked is_example = true and can be removed in one step:
---   delete from public.calendar_events where is_example; delete from public.price_items where is_example; delete from public.tickets where is_example; delete from public.contacts where is_example;
+--   delete from public.calendar_events where is_example; delete from public.technicians where is_example; delete from public.crews where is_example; delete from public.price_items where is_example; delete from public.tickets where is_example; delete from public.contacts where is_example;
 -- Safe to run more than once (fixed ids, on conflict do nothing).
 
 insert into public.contacts (id, first_name, last_name, email, phone, preferred_contact, lead_source, notes, is_example) values
@@ -51,6 +51,24 @@ from (select date_trunc('week', now() at time zone 'America/New_York') as monday
   ('00000000-0000-4000-d000-000000000005', 'site_visit', 'confirmed', 'Site visit: fence repair',         interval '3 days 13 hours', interval '3 days 14 hours',    '00000000-0000-4000-c000-000000000004', null)
 ) as v(id, kind, status, title, starts, ends, ticket_id, notes)
 on conflict (id) do nothing;
+
+-- Example crews and techs (chunk O1). The two bathroom bookings go to the remodel crew.
+insert into public.crews (id, name, color, skills, work_days, day_start, day_end, sort, is_example) values
+  ('00000000-0000-4000-f000-000000000001', 'Deck crew',          'teal',   '{Carpentry,Decks}',  '{1,2,3,4,5}',   '07:00', '15:30', 10, true),
+  ('00000000-0000-4000-f000-000000000002', 'Siding crew',        'orange', '{Siding,Roofing}',   '{1,2,3,4,5,6}', '07:00', '16:00', 20, true),
+  ('00000000-0000-4000-f000-000000000003', 'Remodel crew',       'purple', '{Remodel,Drywall,Painting,Flooring}', '{1,2,3,4,5}', '08:00', '16:30', 30, true)
+on conflict (id) do nothing;
+
+insert into public.technicians (id, full_name, phone, crew_id, skills, is_example) values
+  ('00000000-0000-4000-f100-000000000001', 'Mike Carter',  '(302) 555-0101', '00000000-0000-4000-f000-000000000001', '{Carpentry,Decks}', true),
+  ('00000000-0000-4000-f100-000000000002', 'Luis Ortega',  '(302) 555-0102', '00000000-0000-4000-f000-000000000001', '{Carpentry}',       true),
+  ('00000000-0000-4000-f100-000000000003', 'Sam Hill',     '(302) 555-0103', '00000000-0000-4000-f000-000000000002', '{Siding,Roofing}',  true),
+  ('00000000-0000-4000-f100-000000000004', 'Rosa Bennett', '(302) 555-0104', '00000000-0000-4000-f000-000000000003', '{Remodel,Painting}', true),
+  ('00000000-0000-4000-f100-000000000005', 'Jordan Price', '(302) 555-0105', null,                                   '{Fencing}',         true)
+on conflict (id) do nothing;
+
+update public.calendar_events set crew_id = '00000000-0000-4000-f000-000000000003'
+where id in ('00000000-0000-4000-d000-000000000003', '00000000-0000-4000-d000-000000000004') and crew_id is null;
 
 -- Starter price book (chunk S1). Example numbers only: edit or retire them in Price book.
 --   delete from public.price_items where is_example;

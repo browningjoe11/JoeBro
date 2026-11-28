@@ -1,5 +1,6 @@
 export { Badge, type Tone } from "./Badge";
 export { Button } from "./Button";
+export { CheckChips, type ChipOption } from "./CheckChips";
 export { DataTable, type Column } from "./DataTable";
 export { SelectField, TextAreaField, TextField } from "./Field";
 export { InfoTip } from "./InfoTip";
