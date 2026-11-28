@@ -37,6 +37,8 @@ export function memorySettings(seed: { team?: TeamMember[]; company?: Partial<Co
     async saveCompany(next) {
       await tick();
       if (!next.name.trim()) throw new Error("Company name is required.");
+      if (!Number.isInteger(next.estimateValidDays) || next.estimateValidDays < 1 || next.estimateValidDays > 365) throw new Error("Keep estimates valid for 1 to 365 days.");
+      if (next.estimateTerms.length > 5000) throw new Error("The estimate terms are too long. Keep them under 5,000 characters.");
       company = structuredClone(next);
     },
     async loadLists() {

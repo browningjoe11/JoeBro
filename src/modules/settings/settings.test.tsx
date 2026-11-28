@@ -50,6 +50,24 @@ describe("Settings", () => {
     expect((await mem.backend.loadCompany()).licenseNumber).toBe("2026-0001");
   });
 
+  it("edits the terms and valid days printed on customer estimates", async () => {
+    const mem = renderSettings();
+    const terms = await screen.findByRole("textbox", { name: "Terms printed on every estimate" });
+    await waitFor(() => expect(terms).toBeEnabled());
+    expect((terms as HTMLTextAreaElement).value).toContain("Anything not listed is not included.");
+    await userEvent.clear(terms);
+    await userEvent.type(terms, "Half down, half on completion.");
+    const days = screen.getByRole("spinbutton", { name: /valid for/ });
+    await userEvent.clear(days);
+    await userEvent.click(screen.getByRole("button", { name: "Save company profile" }));
+    expect(await screen.findByText("Keep estimates valid for 1 to 365 days.")).toBeInTheDocument();
+    await userEvent.type(days, "14");
+    await userEvent.click(screen.getByRole("button", { name: "Save company profile" }));
+    expect(await screen.findByText("Company profile saved.")).toBeInTheDocument();
+    const saved = await mem.backend.loadCompany();
+    expect([saved.estimateTerms, saved.estimateValidDays]).toEqual(["Half down, half on completion.", 14]);
+  });
+
   it("switches a module off for everyone's menu", async () => {
     renderSettings();
     // Let the saved settings load before changing them.
