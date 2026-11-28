@@ -70,8 +70,8 @@ describe("sign-in", () => {
   });
 
   const menus: Record<string, string[]> = {
-    "joe@example.com": ["Dashboard", "Calendar", "Tickets", "Contacts", "Sales", "Operations", "Onsite", "Review", "Invoicing", "Settings", "Style guide"],
-    "sam@example.com": ["Dashboard", "Calendar", "Tickets", "Contacts", "Sales"],
+    "joe@example.com": ["Dashboard", "Calendar", "Tickets", "Contacts", "Sales", "Operations", "Onsite", "Review", "Invoicing", "Price book", "Settings", "Style guide"],
+    "sam@example.com": ["Dashboard", "Calendar", "Tickets", "Contacts", "Sales", "Price book"],
     "olivia@example.com": ["Dashboard", "Calendar", "Tickets", "Contacts", "Operations", "Onsite"],
     "tech@example.com": ["Dashboard", "Calendar", "Tickets", "Onsite"],
     "rae@example.com": ["Dashboard", "Calendar", "Tickets", "Contacts", "Review", "Invoicing"],
