@@ -34,7 +34,9 @@ describe("Settings", () => {
   it("renames the company and the header follows", async () => {
     const mem = renderSettings();
     const name = await screen.findByRole("textbox", { name: "Company name" });
-    await waitFor(() => expect(name).toHaveValue("Joebros Contracting Services"));
+    // Fields stay locked until the saved settings have loaded.
+    await waitFor(() => expect(name).toBeEnabled());
+    expect(name).toHaveValue("Joebros Contracting Services");
     await userEvent.clear(name);
     await userEvent.type(name, "Acme Home Services");
     await userEvent.type(screen.getByRole("textbox", { name: /license number/i }), "2026-0001");
@@ -51,7 +53,7 @@ describe("Settings", () => {
   it("switches a module off for everyone's menu", async () => {
     renderSettings();
     // Let the saved settings load before changing them.
-    await waitFor(() => expect(screen.getByRole("textbox", { name: "Company name" })).toHaveValue("Joebros Contracting Services"));
+    await waitFor(() => expect(screen.getByRole("checkbox", { name: /Onsite/ })).toBeEnabled());
     const nav = screen.getByRole("navigation");
     expect(within(nav).getByRole("link", { name: "Onsite" })).toBeInTheDocument();
     const modules = screen.getByRole("heading", { name: "Modules" }).closest("section")!;
