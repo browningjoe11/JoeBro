@@ -56,6 +56,13 @@ export function memoryCalendar(opts: { empty?: boolean } = {}) {
         .map((e) => ({ ...e }))
         .sort((a, b) => a.start.localeCompare(b.start));
     },
+    async forTickets(ids) {
+      await tick();
+      return events
+        .filter((e) => e.ticketId !== null && ids.includes(e.ticketId))
+        .map((e) => ({ ...e }))
+        .sort((a, b) => a.start.localeCompare(b.start));
+    },
     async create(input: NewCalendarEvent) {
       await tick();
       check(input);
