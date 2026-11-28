@@ -41,7 +41,7 @@ Everyone signed in and switched on can read settings; only admins change them.
 
 ### Invites (edge function)
 
-`functions/invite-user` sends a Supabase invite email and sets the new person's role. It checks that the caller is an active admin, then uses the service role key that Supabase injects into every edge function (nothing to configure). Deploy or update it from the Supabase dashboard (Edge Functions → Deploy a new function → via editor, name `invite-user`, paste `functions/invite-user/index.ts`) or with `supabase functions deploy invite-user`. Supabase's built-in email sends only a few messages per hour; a custom SMTP sender (Resend, planned) lifts that.
+`functions/invite-user` sends a Supabase invite email and sets the new person's role. It uses the secret key that Supabase injects into every edge function only to send the invite (nothing to configure); checking that the caller is an active admin and setting the role run as the caller, so row-level security decides. (This project does not grant tables to `service_role`, so the function must not read tables with the secret key.) Deploy or update it from the Supabase dashboard (Edge Functions → Deploy a new function → via editor, name `invite-user`, paste `functions/invite-user/index.ts`) or with `supabase functions deploy invite-user`. Supabase's built-in email sends only a few messages per hour; a custom SMTP sender (Resend, planned) lifts that.
 
 ## Sample data
 
