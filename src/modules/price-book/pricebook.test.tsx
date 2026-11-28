@@ -47,6 +47,17 @@ describe("Price book", () => {
     expect(mem.items().find((i) => i.name === "Roofing shingles bundle")).toMatchObject({ price: 38.75, unit: "bundle", markupPct: 20, trade: "Roofing" });
   });
 
+  it("keeps the name when the kind is switched while adding", async () => {
+    renderBook();
+    await screen.findByText("Carpenter");
+    await userEvent.click(screen.getByRole("button", { name: "Add a labor rate" }));
+    const sheet = screen.getByRole("dialog", { name: "Add a labor rate" });
+    await userEvent.type(within(sheet).getByRole("textbox", { name: "Name" }), "Roofer");
+    await userEvent.selectOptions(within(sheet).getByRole("combobox", { name: /Kind/ }), "adder");
+    expect(within(sheet).getByRole("textbox", { name: "Name" })).toHaveValue("Roofer");
+    expect(within(sheet).getByRole("combobox", { name: "Unit" })).toHaveValue("job");
+  });
+
   it("explains what's missing instead of saving a bad item", async () => {
     renderBook();
     await screen.findByText("Carpenter");

@@ -166,7 +166,8 @@ export function ItemSheet({ open, item, kind, onClose }: ItemSheetProps) {
           <SelectField
             label="Kind"
             value={draft.kind}
-            onChange={(e) => setDraft(toDraft(null, e.target.value as PriceKind))}
+            // Switching kind resets the numbers and unit, but keeps what was already typed.
+            onChange={(e) => setDraft((d) => ({ ...toDraft(null, e.target.value as PriceKind), name: d.name, description: d.description, trade: d.trade }))}
             info="Labor rates are charged per hour, materials at your cost plus markup, adders as extra charges, and multipliers scale part of the estimate."
           >
             {PRICE_KINDS.map((k) => (
