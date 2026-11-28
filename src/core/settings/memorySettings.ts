@@ -25,6 +25,11 @@ export function memorySettings(seed: { team?: TeamMember[]; company?: Partial<Co
   const tick = () => new Promise((r) => setTimeout(r, 0));
 
   const backend: SettingsBackend = {
+    async publishLogo(dataUrl) {
+      await tick();
+      // Nothing to upload in preview: the preview signature shows the image itself.
+      return dataUrl;
+    },
     async loadCompany() {
       await tick();
       return structuredClone(company);

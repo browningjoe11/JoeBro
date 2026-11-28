@@ -14,7 +14,7 @@ describe("module registry", () => {
 
   it("shows admins everything and technicians only their modules", () => {
     expect(modulesFor("admin")).toHaveLength(MODULES.length);
-    expect(modulesFor("technician").map((m) => m.id)).toEqual(["dashboard", "calendar", "tickets", "onsite"]);
+    expect(modulesFor("technician").map((m) => m.id)).toEqual(["dashboard", "calendar", "tickets", "onsite", "signature"]);
   });
 
   it("sorts by order and hides modules an admin turned off", () => {
