@@ -17,7 +17,7 @@ describe("app shell", () => {
     renderAt("/");
     expect(await screen.findByRole("heading", { level: 1, name: "Dashboard" })).toBeInTheDocument();
     const nav = screen.getByRole("navigation");
-    ["Dashboard", "Contacts", "Sales", "Operations", "Onsite", "Review", "Invoicing", "Settings", "Style guide"].forEach((label) =>
+    ["Dashboard", "Tickets", "Contacts", "Sales", "Operations", "Onsite", "Review", "Invoicing", "Settings", "Style guide"].forEach((label) =>
       expect(within(nav).getByRole("link", { name: label })).toBeInTheDocument(),
     );
   });
@@ -70,11 +70,11 @@ describe("sign-in", () => {
   });
 
   const menus: Record<string, string[]> = {
-    "joe@example.com": ["Dashboard", "Contacts", "Sales", "Operations", "Onsite", "Review", "Invoicing", "Settings", "Style guide"],
-    "sam@example.com": ["Dashboard", "Contacts", "Sales"],
-    "olivia@example.com": ["Dashboard", "Contacts", "Operations", "Onsite"],
-    "tech@example.com": ["Dashboard", "Onsite"],
-    "rae@example.com": ["Dashboard", "Contacts", "Review", "Invoicing"],
+    "joe@example.com": ["Dashboard", "Tickets", "Contacts", "Sales", "Operations", "Onsite", "Review", "Invoicing", "Settings", "Style guide"],
+    "sam@example.com": ["Dashboard", "Tickets", "Contacts", "Sales"],
+    "olivia@example.com": ["Dashboard", "Tickets", "Contacts", "Operations", "Onsite"],
+    "tech@example.com": ["Dashboard", "Tickets", "Onsite"],
+    "rae@example.com": ["Dashboard", "Tickets", "Contacts", "Review", "Invoicing"],
   };
 
   it.each(Object.entries(menus))("shows %s only the modules for their role", async (email, expected) => {

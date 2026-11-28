@@ -4,7 +4,7 @@ import { CORE_MODULES, useSettings } from "../../core/settings";
 import { Button, Section } from "../../ui";
 
 export function ModulesSection() {
-  const { backend, catalog, company, refresh } = useSettings();
+  const { backend, catalog, company, loading, refresh } = useSettings();
   const [off, setOff] = useState<Set<string>>(new Set(company.disabledModules));
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<{ tone: "ok" | "bad"; text: string } | null>(null);
@@ -45,6 +45,7 @@ export function ModulesSection() {
                 <input
                   type="checkbox"
                   checked={isOn}
+                  disabled={loading || busy}
                   onChange={(e) => {
                     const next = new Set(off);
                     if (e.target.checked) next.delete(m.id);

@@ -2,8 +2,10 @@ import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 import { AccountPendingScreen, AuthProvider, LoadingScreen, LoginPage, useAuth, type AuthClient } from "./core/auth";
 import { Layout, type Account } from "./core/Layout";
+import { CurrentUserProvider, type CurrentUser } from "./core/currentUser";
 import type { Role } from "./core/modules";
 import { memorySettings, SettingsProvider, useSettings, type SettingsBackend } from "./core/settings";
+import { memoryTickets, TicketsProvider, type TicketsBackend } from "./core/tickets";
 import { MODULES, modulesFor } from "./modules/registry";
 
 interface AppProps {
@@ -13,19 +15,24 @@ interface AppProps {
   initialRole?: Role;
   /** Where company settings and dropdown lists live. Preview mode keeps them in memory. */
   settings?: SettingsBackend;
+  /** Where tickets live. Preview mode uses in-memory sample tickets. */
+  tickets?: TicketsBackend;
 }
 
-export function App({ auth = null, initialRole = "admin", settings }: AppProps) {
-  if (!auth) return <PreviewApp initialRole={initialRole} settings={settings} />;
+type Backends = { settings?: SettingsBackend; tickets?: TicketsBackend };
+
+export function App({ auth = null, initialRole = "admin", settings, tickets }: AppProps) {
+  const backends = { settings, tickets };
+  if (!auth) return <PreviewApp initialRole={initialRole} backends={backends} />;
   return (
     <AuthProvider client={auth}>
-      <SignedInApp settings={settings} />
+      <SignedInApp backends={backends} />
     </AuthProvider>
   );
 }
 
 /** Shows the sign-in screen until someone signs in, then the modules their role allows. */
-function SignedInApp({ settings }: { settings?: SettingsBackend }) {
+function SignedInApp({ backends }: { backends: Backends }) {
   const { status, profile, session, signOut } = useAuth();
   if (status === "loading") return <LoadingScreen />;
   if (status === "signed-out") return <LoginPage />;
@@ -37,28 +44,40 @@ function SignedInApp({ settings }: { settings?: SettingsBackend }) {
     onSignOut: () => void signOut(),
   };
   return (
-    <WithSettings backend={settings}>
+    <WithData
+      backends={backends}
+      user={{
+        id: profile.id,
+        name: profile.fullName || account.email || "",
+        role: profile.role,
+      }}
+    >
       <AppRoutes role={profile.role} account={account} />
-    </WithSettings>
+    </WithData>
   );
 }
 
-function PreviewApp({ initialRole, settings }: { initialRole: Role; settings?: SettingsBackend }) {
+function PreviewApp({ initialRole, backends }: { initialRole: Role; backends: Backends }) {
   const [role, setRole] = useState<Role>(initialRole);
   return (
-    <WithSettings backend={settings}>
+    <WithData backends={backends} user={{ id: null, name: "Preview", role }}>
       <AppRoutes role={role} preview={{ role, onRoleChange: setRole }} />
-    </WithSettings>
+    </WithData>
   );
 }
 
-/** Loads company settings once someone is in; without a backend (preview) they live in memory. */
-function WithSettings({ backend, children }: { backend?: SettingsBackend; children: ReactNode }) {
-  const [fallback] = useState(() => memorySettings().backend);
+/** Data the screens share once someone is in. Without real backends (preview) everything lives in memory. */
+function WithData({ backends, user, children }: { backends: Backends; user: CurrentUser; children: ReactNode }) {
+  const [fallback] = useState(() => ({
+    settings: memorySettings().backend,
+    tickets: memoryTickets().backend,
+  }));
   return (
-    <SettingsProvider backend={backend ?? fallback} catalog={MODULES}>
-      {children}
-    </SettingsProvider>
+    <CurrentUserProvider user={user}>
+      <SettingsProvider backend={backends.settings ?? fallback.settings} catalog={MODULES}>
+        <TicketsProvider backend={backends.tickets ?? fallback.tickets}>{children}</TicketsProvider>
+      </SettingsProvider>
+    </CurrentUserProvider>
   );
 }
 
