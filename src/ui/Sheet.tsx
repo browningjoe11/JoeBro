@@ -18,13 +18,17 @@ interface SheetProps {
 export function Sheet({ open, onClose, title, children, footer }: SheetProps) {
   const panelRef = useRef<HTMLDivElement>(null);
   const titleId = useId();
+  // Keep the latest onClose without re-running the effect: callers often pass a new
+  // function each render, and re-running would pull focus out of the field being typed in.
+  const closeRef = useRef(onClose);
+  closeRef.current = onClose;
 
   useEffect(() => {
     if (!open) return;
     const previous = document.activeElement as HTMLElement | null;
     panelRef.current?.focus();
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
+      if (e.key === "Escape") closeRef.current();
       if (e.key === "Tab" && panelRef.current) trapFocus(e, panelRef.current);
     };
     document.addEventListener("keydown", onKey);
@@ -34,7 +38,7 @@ export function Sheet({ open, onClose, title, children, footer }: SheetProps) {
       document.body.style.overflow = "";
       previous?.focus?.();
     };
-  }, [open, onClose]);
+  }, [open]);
 
   if (!open) return null;
   return (

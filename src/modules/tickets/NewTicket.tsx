@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent } from "react";
-import { Link, Navigate, useNavigate } from "react-router-dom";
+import { Link, Navigate, useLocation, useNavigate } from "react-router-dom";
 import { ModulePage } from "../../core/ModulePage";
 import { useCurrentUser } from "../../core/currentUser";
 import { useSettings } from "../../core/settings";
@@ -14,11 +14,14 @@ export function NewTicket() {
   const user = useCurrentUser();
   const { choices } = useSettings();
   const navigate = useNavigate();
+  // The customer page's "New ticket" button passes the customer along.
+  const preset = (useLocation().state as { contact?: ContactOption } | null)?.contact ?? null;
 
   // Customer
   const [search, setSearch] = useState("");
   const [results, setResults] = useState<ContactOption[]>([]);
-  const [customer, setCustomer] = useState<ContactOption | null>(null);
+  const [customer, setCustomer] = useState<ContactOption | null>(preset);
+  const [lookalikes, setLookalikes] = useState<ContactOption[]>([]);
   const [addingCustomer, setAddingCustomer] = useState(false);
   const [person, setPerson] = useState({
     firstName: "",
@@ -27,7 +30,9 @@ export function NewTicket() {
     email: "",
   });
   // Site
-  const [propertyId, setPropertyId] = useState<string>(NEW);
+  const [propertyId, setPropertyId] = useState<string>(
+    () => preset?.properties.find((p) => p.isPrimary)?.id ?? preset?.properties[0]?.id ?? NEW,
+  );
   const [address, setAddress] = useState({ street: "", city: "", zip: "" });
   // Job
   const [job, setJob] = useState({
@@ -56,6 +61,32 @@ export function NewTicket() {
       clearTimeout(t);
     };
   }, [backend, search, customer, addingCustomer]);
+
+  // While adding a new customer, look for one we already have with that phone or email.
+  useEffect(() => {
+    if (!addingCustomer) return setLookalikes([]);
+    const digits = person.phone.replace(/\D/g, "").replace(/^1(\d{10})$/, "$1");
+    const email = person.email.trim().toLowerCase();
+    const probes = [digits.length >= 7 ? digits : "", /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email) ? email : ""].filter(Boolean);
+    if (probes.length === 0) return setLookalikes([]);
+    let live = true;
+    const t = setTimeout(() => {
+      Promise.all(probes.map((q) => backend.searchContacts(q)))
+        .then((lists) => {
+          const seen = new Map<string, ContactOption>();
+          lists.flat().forEach((c) => {
+            const same = (digits.length >= 7 && c.phone.replace(/\D/g, "").endsWith(digits)) || (email && c.email.toLowerCase() === email);
+            if (same) seen.set(c.id, c);
+          });
+          if (live) setLookalikes([...seen.values()]);
+        })
+        .catch(() => live && setLookalikes([]));
+    }, 250);
+    return () => {
+      live = false;
+      clearTimeout(t);
+    };
+  }, [backend, addingCustomer, person.phone, person.email]);
 
   if (!CREATOR_ROLES.includes(user.role)) return <Navigate to="/tickets" replace />;
 
@@ -161,6 +192,21 @@ export function NewTicket() {
                   autoComplete="off"
                 />
               </div>
+              {lookalikes.length > 0 && (
+                <div className="dup-warning" role="status">
+                  <strong>Already a customer?</strong>
+                  <ul className="pick-list" aria-label="Customers with the same phone or email">
+                    {lookalikes.map((c) => (
+                      <li key={c.id}>
+                        <button type="button" onClick={() => (setAddingCustomer(false), pick(c))}>
+                          <strong>Use {c.name}</strong>
+                          <small>{[c.phone, c.email].filter(Boolean).join(" · ")}</small>
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
               <p>
                 <button type="button" className="link-btn" onClick={() => setAddingCustomer(false)}>
                   Pick an existing customer instead

@@ -12,8 +12,16 @@ const FIELD_LABELS: Record<string, string> = {
   next_action_at: "next action date",
 };
 
-export function Timeline({ events, people }: { events: TicketEvent[]; people: Map<string, Person> }) {
-  if (events.length === 0) return <p className="settings-help">Nothing has happened on this ticket yet.</p>;
+interface TimelineProps<E extends TicketEvent> {
+  events: E[];
+  people: Map<string, Person>;
+  /** Extra line under each entry, e.g. which ticket it was on (the customer page shows several tickets). */
+  context?: (e: E) => ReactNode;
+  empty?: string;
+}
+
+export function Timeline<E extends TicketEvent>({ events, people, context, empty = "Nothing has happened on this ticket yet." }: TimelineProps<E>) {
+  if (events.length === 0) return <p className="settings-help">{empty}</p>;
   const who = (id: string | null) => (id ? (people.get(id)?.name ?? "A former team member") : "The system");
 
   function show(field: string, v: unknown): string {
@@ -83,6 +91,7 @@ export function Timeline({ events, people }: { events: TicketEvent[]; people: Ma
             <time className="timeline-time" dateTime={e.createdAt}>
               {formatDateTime(e.createdAt)}
             </time>
+            {context && <span className="timeline-context">{context(e)}</span>}
           </div>
         </li>
       ))}
