@@ -12,6 +12,7 @@ import { CalendarProvider, memoryCalendar, type CalendarBackend } from "./core/c
 import { CrewsProvider, memoryCrews, type CrewsBackend } from "./core/crews";
 import { ImportProvider, memoryImport, type ImportBackend } from "./core/import";
 import { EstimatesProvider, memoryEstimates, type EstimatesBackend } from "./core/estimate";
+import { memorySignatures, SignaturesProvider, type SignatureBackend } from "./core/signature";
 import { MODULES, modulesFor } from "./modules/registry";
 
 interface AppProps {
@@ -35,6 +36,8 @@ interface AppProps {
   crews?: CrewsBackend;
   /** Where estimates and their saved versions live. Preview mode keeps them in memory. */
   estimates?: EstimatesBackend;
+  /** Where email signatures live. Preview mode keeps them in memory. */
+  signatures?: SignatureBackend;
 }
 
 type Backends = {
@@ -46,10 +49,11 @@ type Backends = {
   crmImport?: ImportBackend;
   crews?: CrewsBackend;
   estimates?: EstimatesBackend;
+  signatures?: SignatureBackend;
 };
 
-export function App({ auth = null, initialRole = "admin", settings, tickets, contacts, calendar, priceBook, crmImport, crews, estimates }: AppProps) {
-  const backends = { settings, tickets, contacts, calendar, priceBook, crmImport, crews, estimates };
+export function App({ auth = null, initialRole = "admin", settings, tickets, contacts, calendar, priceBook, crmImport, crews, estimates, signatures }: AppProps) {
+  const backends = { settings, tickets, contacts, calendar, priceBook, crmImport, crews, estimates, signatures };
   if (!auth) return <PreviewApp initialRole={initialRole} backends={backends} />;
   return (
     <AuthProvider client={auth}>
@@ -76,6 +80,7 @@ function SignedInApp({ backends }: { backends: Backends }) {
       user={{
         id: profile.id,
         name: profile.fullName || account.email || "",
+        email: account.email,
         role: profile.role,
       }}
     >
@@ -109,6 +114,7 @@ function WithData({ backends, user, children }: { backends: Backends; user: Curr
       priceBook: memoryPriceBook().backend,
       crmImport: memoryImport().backend,
       crews: memoryCrews().backend,
+      signatures: memorySignatures().backend,
     };
   });
   return (
@@ -120,7 +126,9 @@ function WithData({ backends, user, children }: { backends: Backends; user: Curr
               <CrewsProvider backend={backends.crews ?? fallback.crews}>
                 <CalendarProvider backend={backends.calendar ?? fallback.calendar}>
                   <ImportProvider backend={backends.crmImport ?? fallback.crmImport}>
-                    <EstimatesProvider backend={backends.estimates ?? fallback.estimates}>{children}</EstimatesProvider>
+                    <EstimatesProvider backend={backends.estimates ?? fallback.estimates}>
+                      <SignaturesProvider backend={backends.signatures ?? fallback.signatures}>{children}</SignaturesProvider>
+                    </EstimatesProvider>
                   </ImportProvider>
                 </CalendarProvider>
               </CrewsProvider>

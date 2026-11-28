@@ -14,6 +14,16 @@ function fail(error: { message: string; code?: string } | null): void {
   throw new Error(error.message);
 }
 
+/** Short stable fingerprint of a string (FNV-1a), used to name uploaded logos. */
+function fingerprint(text: string): string {
+  let h = 0x811c9dc5;
+  for (let i = 0; i < text.length; i++) {
+    h ^= text.charCodeAt(i);
+    h = Math.imul(h, 0x01000193);
+  }
+  return (h >>> 0).toString(36);
+}
+
 export function supabaseSettings(sb: SupabaseClient): SettingsBackend {
   return {
     async loadCompany() {
@@ -31,6 +41,7 @@ export function supabaseSettings(sb: SupabaseClient): SettingsBackend {
         state: s(data.state) || "DE",
         zip: s(data.zip),
         logoDataUrl: data.logo_data_url ?? null,
+        emailLogoUrl: data.email_logo_url ?? null,
         disabledModules: data.disabled_modules ?? [],
       } satisfies CompanySettings;
     },
@@ -48,6 +59,7 @@ export function supabaseSettings(sb: SupabaseClient): SettingsBackend {
           state: c.state.trim() || "DE",
           zip: orNull(c.zip),
           logo_data_url: c.logoDataUrl,
+          email_logo_url: c.logoDataUrl ? c.emailLogoUrl : null,
           disabled_modules: c.disabledModules,
         })
         .eq("id", true);
@@ -92,6 +104,18 @@ export function supabaseSettings(sb: SupabaseClient): SettingsBackend {
       if (patch.active !== undefined) row.active = patch.active;
       const { error } = await sb.from("profiles").update(row).eq("id", id);
       fail(error);
+    },
+    async publishLogo(dataUrl) {
+      const match = /^data:(image\/(png|jpeg));base64,(.+)$/.exec(dataUrl);
+      if (!match) throw new Error("Upload the logo again as a PNG or JPG so emails can show it.");
+      const bytes = Uint8Array.from(atob(match[3]), (ch) => ch.charCodeAt(0));
+      // A new name for each logo, so mail apps that cached the old one pick up the change.
+      const path = `logo-${fingerprint(dataUrl)}.${match[2] === "jpeg" ? "jpg" : "png"}`;
+      const { error } = await sb.storage
+        .from("branding")
+        .upload(path, new Blob([bytes], { type: match[1] }), { upsert: true, contentType: match[1], cacheControl: "31536000" });
+      if (error) throw new Error(`Couldn't publish the logo for emails: ${error.message}`);
+      return sb.storage.from("branding").getPublicUrl(path).data.publicUrl;
     },
     async invite(invite) {
       const { data, error } = await sb.functions.invoke("invite-user", {

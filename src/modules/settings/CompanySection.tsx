@@ -3,7 +3,7 @@ import { useSettings, type CompanySettings } from "../../core/settings";
 import { Button, Section, TextField } from "../../ui";
 import { logoFromFile } from "./logo";
 
-type TextKey = Exclude<keyof CompanySettings, "logoDataUrl" | "disabledModules">;
+type TextKey = Exclude<keyof CompanySettings, "logoDataUrl" | "emailLogoUrl" | "disabledModules">;
 
 export function CompanySection() {
   const { backend, company, loading, refresh } = useSettings();
@@ -28,7 +28,12 @@ export function CompanySection() {
     try {
       // Re-read module switches so saving the profile never undoes a change made in the Modules section.
       const latest = await backend.loadCompany();
-      await backend.saveCompany({ ...draft, disabledModules: latest.disabledModules });
+      // Emails need the logo at a public web address; copy it there when it's new or was never copied.
+      let emailLogoUrl = draft.logoDataUrl ? draft.emailLogoUrl : null;
+      if (draft.logoDataUrl && (draft.logoDataUrl !== latest.logoDataUrl || !emailLogoUrl)) {
+        emailLogoUrl = await backend.publishLogo(draft.logoDataUrl);
+      }
+      await backend.saveCompany({ ...draft, emailLogoUrl, disabledModules: latest.disabledModules });
       await refresh();
       setMessage({ tone: "ok", text: "Company profile saved." });
     } catch (err) {

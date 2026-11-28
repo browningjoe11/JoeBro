@@ -32,6 +32,10 @@
   --info: #2b5c9e;
   --info-soft: #e1ebf8;
 
+  /* Email paper: mail apps show messages on white whatever the app theme, so previews of emails do too. */
+  --paper: #ffffff;
+  --paper-ink: #1b2826;
+
   /* Type */
   --f-display: "Barlow Condensed", "Arial Narrow", Arial, sans-serif;
   --f-body: "Barlow", "Segoe UI", system-ui, -apple-system, sans-serif;
