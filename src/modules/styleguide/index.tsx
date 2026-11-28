@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Icon } from "../../core/Icon";
 import { ModulePage } from "../../core/ModulePage";
 import type { ModuleDefinition } from "../../core/modules";
+import { describePrice, PriceItemPicker, type PriceItem } from "../../core/pricebook";
 import { Badge, Button, DataTable, InfoTip, Section, SelectField, Sheet, TextAreaField, TextField, type Column, type Tone } from "../../ui";
 
 const SWATCHES = [
@@ -55,6 +56,7 @@ const MATERIAL_COLUMNS: Column<MaterialRow>[] = [
 
 function StyleGuidePage() {
   const [sheetOpen, setSheetOpen] = useState(false);
+  const [picked, setPicked] = useState<PriceItem | null>(null);
   const materialsTotal = EXAMPLE_MATERIALS.reduce((sum, r) => sum + r.qty * r.cost, 0);
 
   return (
@@ -162,6 +164,15 @@ function StyleGuidePage() {
             </tr>
           }
         />
+      </Section>
+
+      <Section
+        title="Price book picker"
+        storageKey="styleguide.picker"
+        info="Search the price book and pick an item. Retired items never show. Estimates use this to add lines, limited to one kind or trade."
+      >
+        <PriceItemPicker kind="material" onPick={setPicked} />
+        <p className="pb-muted">{picked ? `Picked: ${picked.name}, ${describePrice(picked)}` : "Nothing picked yet."}</p>
       </Section>
 
       <Section title="Bubble notes" storageKey="styleguide.tips" defaultOpen={false}>
