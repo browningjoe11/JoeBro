@@ -114,8 +114,9 @@ describe("what each role can see", () => {
       profiles: await count(tx, "profiles"),
     }));
     expect(newcomer).toEqual({ tickets: 0, contacts: 0, profiles: 1 });
-    const anon = await as("anon", async (tx) => ({ tickets: await count(tx, "tickets"), profiles: await count(tx, "profiles") }));
-    expect(anon).toEqual({ tickets: 0, profiles: 0 });
+    // Visitors who aren't signed in can't touch the tables at all.
+    await expect(as("anon", (tx) => count(tx, "tickets"))).rejects.toThrow(/permission denied/);
+    await expect(as("anon", (tx) => count(tx, "profiles"))).rejects.toThrow(/permission denied/);
   });
 });
 

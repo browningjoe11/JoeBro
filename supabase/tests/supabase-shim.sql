@@ -15,9 +15,9 @@ do $$ begin
   if not exists (select 1 from pg_roles where rolname = 'authenticated') then create role authenticated nologin; end if;
 end $$;
 
--- Supabase gives the API roles table access by default; row-level security does the filtering.
+-- Like a current Supabase project: the API roles can use the schema, but new tables
+-- and functions are NOT exposed to them automatically. Each migration grants what
+-- the app needs (see 20261128000000_api_grants.sql); row-level security then filters rows.
 grant usage on schema public, auth to anon, authenticated;
 grant execute on function auth.uid() to anon, authenticated;
-alter default privileges in schema public grant all on tables to anon, authenticated;
-alter default privileges in schema public grant all on sequences to anon, authenticated;
-alter default privileges in schema public grant execute on functions to anon, authenticated;
+alter default privileges in schema public revoke execute on functions from public;
