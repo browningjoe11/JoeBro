@@ -3,41 +3,26 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import { Icon } from "../../core/Icon";
 import { ModulePage } from "../../core/ModulePage";
 import {
+  changeToEvent,
   CONTACT_EDITOR_ROLES,
-  EMPTY_PROPERTY,
   useContacts,
-  validateContact,
-  validateProperty,
   type Contact,
+  type ContactChange,
   type ContactEvent,
-  type ContactInput,
   type ContactTicket,
-  type PropertyInput,
   type PropertyRecord,
 } from "../../core/contacts";
 import { useCurrentUser } from "../../core/currentUser";
 import { CREATOR_ROLES, STAGE_LABELS, useTickets, type ContactOption, type Person } from "../../core/tickets";
-import { Badge, Button, DataTable, Section, Sheet, type Column } from "../../ui";
+import { Badge, Button, DataTable, Section, type Column } from "../../ui";
 import { formatDate, formatMoney, stageTone } from "../tickets/format";
 import { Timeline } from "../tickets/Timeline";
-import { ContactFields, DuplicateWarning, useDuplicateCheck } from "./ContactForm";
-import { PropertyFields } from "./PropertyForm";
+import { DuplicateWarning, useDuplicateCheck } from "./ContactForm";
+import { EditContact, EditProperty } from "./EditSheets";
 
 const METHOD: Record<Contact["preferredContact"], string> = { phone: "Call", text: "Text", email: "Email" };
 const CLOSED = new Set(["paid", "lost"]);
 
-const toInput = (c: Contact): ContactInput => ({
-  firstName: c.firstName,
-  lastName: c.lastName,
-  company: c.company,
-  phone: c.phone,
-  phoneAlt: c.phoneAlt,
-  email: c.email,
-  preferredContact: c.preferredContact,
-  leadSource: c.leadSource,
-  notes: c.notes,
-});
-const toPropertyInput = ({ id: _id, contactId: _c, ...p }: PropertyRecord): PropertyInput => p;
 const addressLine = (p: { street: string; unit: string; city: string; state: string; zip: string }) =>
   [[p.street, p.unit].filter(Boolean).join(" "), p.city, [p.state, p.zip].filter(Boolean).join(" ")].filter(Boolean).join(", ");
 
@@ -51,6 +36,7 @@ export function ContactDetail() {
 
   const [contact, setContact] = useState<Contact | null | undefined>(undefined);
   const [history, setHistory] = useState<ContactEvent[]>([]);
+  const [changes, setChanges] = useState<ContactChange[]>([]);
   const [people, setPeople] = useState<Map<string, Person>>(new Map());
   const [loadError, setLoadError] = useState<string | null>(null);
   const [editing, setEditing] = useState(false);
@@ -58,9 +44,10 @@ export function ContactDetail() {
 
   const load = useCallback(async () => {
     try {
-      const [c, h] = await Promise.all([backend.get(id), backend.history(id)]);
+      const [c, h, log] = await Promise.all([backend.get(id), backend.history(id), backend.changes(id).catch(() => [])]);
       setContact(c);
       setHistory(h);
+      setChanges(log);
       setLoadError(null);
     } catch (e) {
       setLoadError(e instanceof Error ? e.message : String(e));
@@ -287,6 +274,15 @@ export function ContactDetail() {
               )}
             />
           </Section>
+
+          <Section
+            title="Change log"
+            storageKey="contacts.detail.changes"
+            summary={changes.length ? `${changes.length} ${changes.length === 1 ? "change" : "changes"}` : undefined}
+            info="Every edit to this customer's phone, email, name or job sites, made here or from any of their tickets."
+          >
+            <Timeline events={changes.map(changeToEvent)} people={people} empty="No changes since this customer was added." />
+          </Section>
         </div>
       </div>
 
@@ -301,119 +297,5 @@ export function ContactDetail() {
         />
       )}
     </ModulePage>
-  );
-}
-
-function EditContact({ contact, onClose, onSaved }: { contact: Contact; onClose: () => void; onSaved: () => Promise<void> }) {
-  const backend = useContacts();
-  const [value, setValue] = useState(() => toInput(contact));
-  const [errors, setErrors] = useState<Record<string, string>>({});
-  const [busy, setBusy] = useState(false);
-  const [failure, setFailure] = useState<string | null>(null);
-  const matches = useDuplicateCheck(value, contact.id);
-
-  async function save() {
-    const errs = validateContact(value);
-    setErrors(errs);
-    if (Object.keys(errs).length) return;
-    setBusy(true);
-    setFailure(null);
-    try {
-      await backend.update(contact.id, value);
-      await onSaved();
-      onClose();
-    } catch (e) {
-      setFailure(e instanceof Error ? e.message : String(e));
-      setBusy(false);
-    }
-  }
-
-  return (
-    <Sheet
-      open
-      onClose={onClose}
-      title="Edit customer"
-      footer={
-        <>
-          <Button variant="ghost" onClick={onClose}>
-            Cancel
-          </Button>
-          <Button variant="primary" onClick={save} disabled={busy}>
-            {busy ? "Saving…" : "Save"}
-          </Button>
-        </>
-      }
-    >
-      <ContactFields value={value} onChange={setValue} errors={errors} />
-      <DuplicateWarning matches={matches} />
-      {failure && (
-        <p className="settings-error" role="alert">
-          {failure}
-        </p>
-      )}
-    </Sheet>
-  );
-}
-
-function EditProperty({
-  contactId,
-  property,
-  isOnly,
-  onClose,
-  onSaved,
-}: {
-  contactId: string;
-  property: PropertyRecord | null;
-  isOnly: boolean;
-  onClose: () => void;
-  onSaved: () => Promise<void>;
-}) {
-  const backend = useContacts();
-  const [value, setValue] = useState<PropertyInput>(() => (property ? toPropertyInput(property) : { ...EMPTY_PROPERTY, isPrimary: isOnly }));
-  const [errors, setErrors] = useState<Record<string, string>>({});
-  const [busy, setBusy] = useState(false);
-  const [failure, setFailure] = useState<string | null>(null);
-
-  async function save() {
-    const errs = validateProperty(value);
-    setErrors(errs);
-    if (Object.keys(errs).length) return;
-    setBusy(true);
-    setFailure(null);
-    try {
-      if (property) await backend.updateProperty(property.id, value);
-      else await backend.addProperty(contactId, value);
-      await onSaved();
-      onClose();
-    } catch (e) {
-      setFailure(e instanceof Error ? e.message : String(e));
-      setBusy(false);
-    }
-  }
-
-  return (
-    <Sheet
-      open
-      onClose={onClose}
-      title={property ? "Edit property" : "Add property"}
-      footer={
-        <>
-          <Button variant="ghost" onClick={onClose}>
-            Cancel
-          </Button>
-          <Button variant="primary" onClick={save} disabled={busy}>
-            {busy ? "Saving…" : "Save"}
-          </Button>
-        </>
-      }
-    >
-      {/* A main property can't be un-marked directly; mark another one as main instead. */}
-      <PropertyFields value={value} onChange={setValue} errors={errors} canChangePrimary={!isOnly && !property?.isPrimary} />
-      {failure && (
-        <p className="settings-error" role="alert">
-          {failure}
-        </p>
-      )}
-    </Sheet>
   );
 }

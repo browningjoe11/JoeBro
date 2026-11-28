@@ -26,3 +26,4 @@
   .contact-actions .btn { flex: 1 1 auto; }
   .toolbar .field-hint { display: none; }
 }
+.sheet-notice { margin: 0 0 var(--sp-4); padding: var(--sp-3) var(--sp-4); border-left: 3px solid var(--brand); border-radius: var(--radius-sm); background: var(--brand-soft); color: var(--ink); font-size: var(--text-sm); }

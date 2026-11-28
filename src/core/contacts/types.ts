@@ -117,12 +117,26 @@ export interface DuplicateMatch {
   reasons: ("phone" | "email")[];
 }
 
+/** One save to a customer's details or one of their job sites, from the change log. */
+export interface ContactChange {
+  id: string;
+  contactId: string;
+  /** Set when a job site changed. */
+  propertyId: string | null;
+  actorId: string | null;
+  /** Database column names: phone, phone_alt, email, street, zip, ... A new site is {site_added: {from: null, to: "1 Main St, Dover"}}. */
+  changes: Record<string, { from: unknown; to: unknown }>;
+  createdAt: string;
+}
+
 /** Everything the Contacts screens need. The live app uses Supabase; preview mode and tests keep customers in memory. */
 export interface ContactsBackend {
   list(): Promise<ContactSummary[]>;
   get(id: string): Promise<Contact | null>;
   /** Timeline of every ticket the customer has had, newest first. */
   history(contactId: string): Promise<ContactEvent[]>;
+  /** Change log for the customer's details and job sites, newest first. */
+  changes(contactId: string): Promise<ContactChange[]>;
   /** Other customers with the same phone (any format) or email. */
   findDuplicates(probe: { phone?: string; phoneAlt?: string; email?: string }, excludeId?: string): Promise<DuplicateMatch[]>;
   /** Resolves to the new customer's id. */
