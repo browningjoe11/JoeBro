@@ -5,6 +5,8 @@ export interface CurrentUser {
   /** Null in preview mode (nobody signed in). */
   id: string | null;
   name: string;
+  /** Sign-in email, when known. */
+  email?: string | null;
   role: Role;
 }
 

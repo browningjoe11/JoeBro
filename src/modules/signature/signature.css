@@ -1,0 +1,30 @@
+/* Email signature builder (chunk S5) */
+.sig-who { max-width: 360px; margin-bottom: var(--sp-4); }
+.sig-layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: var(--sp-5); align-items: start; }
+.sig-form { display: grid; gap: 0; min-width: 0; }
+.sig-form .settings-actions { margin-top: var(--sp-2); }
+.sig-side { position: sticky; top: var(--sp-4); min-width: 0; }
+.sig-form .settings-grid + .field { margin-top: var(--sp-4); }
+.sig-checks { list-style: none; margin: 0 0 var(--sp-4); padding: 0; }
+.sig-logo-note { display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-2); margin-top: var(--sp-1); }
+.sig-logo-error { color: var(--bad); }
+
+/* The preview stands in for an email, which mail apps show on white in every theme. */
+.sig-email {
+  padding: var(--sp-4) var(--sp-5); border: 1px solid var(--line); border-radius: var(--radius);
+  background: var(--paper); color: var(--paper-ink); overflow-x: auto;
+}
+.sig-email-body { margin: 0 0 var(--sp-4); font-family: Arial, Helvetica, sans-serif; font-size: var(--text-sm); }
+.sig-email-signature { min-width: 0; }
+.sig-email-signature img { max-width: none; }
+
+.sig-howto h3 { margin: var(--sp-3) 0 var(--sp-1); font-size: var(--text-md); }
+.sig-howto h3:first-child { margin-top: 0; }
+.sig-howto ol { margin: 0 0 var(--sp-2); padding-left: var(--sp-5); display: grid; gap: var(--sp-1); }
+.sig-howto code { font-family: var(--f-mono); font-size: var(--text-sm); background: var(--surface-2); padding: 1px 4px; border-radius: var(--radius-sm); overflow-wrap: anywhere; }
+
+@media (max-width: 900px) {
+  .sig-layout { grid-template-columns: minmax(0, 1fr); }
+  .sig-side { position: static; }
+  .sig-email { padding: var(--sp-3); }
+}
