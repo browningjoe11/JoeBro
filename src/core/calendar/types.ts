@@ -61,6 +61,8 @@ export type CalendarEventPatch = Partial<NewCalendarEvent>;
 export interface CalendarBackend {
   /** Events that overlap [from, to). */
   list(from: Date, to: Date): Promise<CalendarEvent[]>;
+  /** Every booking linked to these tickets, any date (the scheduling board's queue). */
+  forTickets(ticketIds: readonly string[]): Promise<CalendarEvent[]>;
   create(event: NewCalendarEvent, actorId: string | null): Promise<CalendarEvent>;
   update(id: string, patch: CalendarEventPatch): Promise<CalendarEvent>;
   remove(id: string): Promise<void>;

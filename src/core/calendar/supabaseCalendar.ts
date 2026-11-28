@@ -67,6 +67,12 @@ export function supabaseCalendar(sb: SupabaseClient): CalendarBackend {
       fail(error);
       return ((data ?? []) as unknown as Row[]).map(toEvent);
     },
+    async forTickets(ids) {
+      if (ids.length === 0) return [];
+      const { data, error } = await sb.from("calendar_events").select(COLUMNS).in("ticket_id", [...ids]).order("starts_at").limit(1000);
+      fail(error);
+      return ((data ?? []) as unknown as Row[]).map(toEvent);
+    },
     async create(e, actorId) {
       const { data, error } = await sb
         .from("calendar_events")

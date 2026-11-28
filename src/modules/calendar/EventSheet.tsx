@@ -17,7 +17,16 @@ import { COLOR_NAMES, CrewChip, useCrews } from "../../core/crews";
 import { useTickets, type Person, type TicketSummary } from "../../core/tickets";
 import { Button, SelectField, Sheet, TextAreaField, TextField } from "../../ui";
 
-export type SheetState = { mode: "new"; start: Date; end: Date } | { mode: "edit"; event: CalendarEvent } | null;
+export type SheetState =
+  | {
+      mode: "new";
+      start: Date;
+      end: Date;
+      /** Starting values, e.g. a job from the scheduling board: kind, status, ticket, crew and title filled in. */
+      preset?: Partial<Pick<NewCalendarEvent, "title" | "kind" | "status" | "ticketId" | "crewId">>;
+    }
+  | { mode: "edit"; event: CalendarEvent }
+  | null;
 
 interface Draft {
   title: string;
@@ -35,15 +44,16 @@ interface Draft {
 
 function draftFrom(state: NonNullable<SheetState>): Draft {
   if (state.mode === "new") {
+    const p = state.preset ?? {};
     return {
-      title: "",
-      kind: "site_visit",
-      status: "confirmed",
+      title: p.title ?? "",
+      kind: p.kind ?? "site_visit",
+      status: p.status ?? "confirmed",
       date: toDateKey(state.start),
       startTime: toTimeValue(state.start),
       endTime: toTimeValue(state.end),
-      ticketId: "",
-      crewId: "",
+      ticketId: p.ticketId ?? "",
+      crewId: p.crewId ?? "",
       assignedTo: "",
       color: "",
       notes: "",
