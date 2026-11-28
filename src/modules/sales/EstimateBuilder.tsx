@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { useCurrentUser } from "../../core/currentUser";
 import {
   calculateEstimate,
@@ -39,6 +39,7 @@ export function EstimateBuilder() {
   const backend = useEstimates();
   const tickets = useTickets();
   const user = useCurrentUser();
+  const navigate = useNavigate();
 
   const [estimate, setEstimate] = useState<Estimate | null | undefined>(undefined);
   const [ticket, setTicket] = useState<TicketSummary | null>(null);
@@ -314,13 +315,24 @@ export function EstimateBuilder() {
             </div>
           </Section>
 
-          <VersionsSection versions={versions} onLoad={setRestoring} />
+          <VersionsSection versions={versions} estimateId={id} onLoad={setRestoring} />
         </div>
 
         <aside className="est-aside" aria-label="Estimate total">
           <Totals result={result} />
           <Button variant="primary" size="lg" className="est-save-version" disabled={!!titleError} onClick={() => setVersionSheet(true)}>
             Save version {(latest?.version ?? 0) + 1}
+          </Button>
+          <Button
+            className="est-save-version"
+            onClick={() => {
+              // The saved version when nothing the customer sees has changed since; otherwise a preview of the draft.
+              const same = latest && JSON.stringify([latest.title, latest.lines, latest.notes]) === JSON.stringify([draft.title, draft.lines, draft.notes]);
+              const target = same ? String(latest.version) : "draft";
+              void flush().then(() => navigate(`/sales/estimates/${id}/document?version=${target}`));
+            }}
+          >
+            Preview customer estimate
           </Button>
           <p className="settings-help">
             {changedSinceVersion
@@ -424,7 +436,7 @@ export function Totals({ result }: { result: EstimateResult }) {
   );
 }
 
-function VersionsSection({ versions, onLoad }: { versions: EstimateVersion[]; onLoad: (v: EstimateVersion) => void }) {
+function VersionsSection({ versions, estimateId, onLoad }: { versions: EstimateVersion[]; estimateId: string; onLoad: (v: EstimateVersion) => void }) {
   const columns: Column<EstimateVersion>[] = [
     { key: "v", header: "Version", render: (v) => <strong>v{v.version}</strong> },
     { key: "label", header: "What changed", render: (v) => v.label || <span className="muted">—</span> },
@@ -434,9 +446,14 @@ function VersionsSection({ versions, onLoad }: { versions: EstimateVersion[]; on
       key: "load",
       header: "",
       render: (v) => (
-        <Button size="sm" variant="ghost" aria-label={`Load version ${v.version} into the draft`} onClick={() => onLoad(v)}>
-          Load into draft
-        </Button>
+        <span className="est-version-actions">
+          <Link className="btn btn--sm btn--ghost" to={`/sales/estimates/${estimateId}/document?version=${v.version}`} aria-label={`Customer estimate for version ${v.version}`}>
+            Customer copy
+          </Link>
+          <Button size="sm" variant="ghost" aria-label={`Load version ${v.version} into the draft`} onClick={() => onLoad(v)}>
+            Load into draft
+          </Button>
+        </span>
       ),
     },
   ];
