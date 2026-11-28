@@ -78,6 +78,11 @@ export function AuthProvider({ client, children }: { client: AuthClient; childre
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
+/** The sign-in state, or null in preview mode (no sign-in configured). */
+export function useAuthIfAny(): AuthContextValue | null {
+  return useContext(AuthContext);
+}
+
 export function useAuth(): AuthContextValue {
   const ctx = useContext(AuthContext);
   if (!ctx) throw new Error("useAuth must be used inside <AuthProvider>");
