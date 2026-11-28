@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState, type FormEvent } from "react
 import { Link, useParams } from "react-router-dom";
 import { CONTACT_EDITOR_ROLES, mergeTimeline, useContacts, type Contact, type ContactChange } from "../../core/contacts";
 import { ModulePage } from "../../core/ModulePage";
+import { TicketEstimates } from "../sales/TicketEstimates";
 import { useCurrentUser } from "../../core/currentUser";
 import { useSettings } from "../../core/settings";
 import {
@@ -176,6 +177,8 @@ export function TicketDetail() {
       </div>
 
       <DetailsSection ticket={t} people={people} canEdit={canEdit} onSaved={load} />
+
+      <TicketEstimates ticketId={t.id} ticketNumber={t.number} />
 
       <Section
         title="Customer and site"
