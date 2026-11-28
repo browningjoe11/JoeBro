@@ -10,6 +10,8 @@ function fail(error: { message: string; code?: string } | null): void {
   if (!error) return;
   if (/option_lists_unique_label|duplicate key/i.test(error.message)) throw new Error("That choice is already on the list.");
   if (/at least one active admin/i.test(error.message)) throw new Error("Keep at least one active admin.");
+  if (/estimate_valid_days/i.test(error.message)) throw new Error("Keep estimates valid for 1 to 365 days.");
+  if (/estimate_terms_length/i.test(error.message)) throw new Error("The estimate terms are too long. Keep them under 5,000 characters.");
   if (/logo_size/i.test(error.message)) throw new Error("That logo is too large. Try a smaller image.");
   throw new Error(error.message);
 }
@@ -42,6 +44,8 @@ export function supabaseSettings(sb: SupabaseClient): SettingsBackend {
         zip: s(data.zip),
         logoDataUrl: data.logo_data_url ?? null,
         emailLogoUrl: data.email_logo_url ?? null,
+        estimateTerms: s(data.estimate_terms),
+        estimateValidDays: typeof data.estimate_valid_days === "number" ? data.estimate_valid_days : 30,
         disabledModules: data.disabled_modules ?? [],
       } satisfies CompanySettings;
     },
@@ -60,6 +64,8 @@ export function supabaseSettings(sb: SupabaseClient): SettingsBackend {
           zip: orNull(c.zip),
           logo_data_url: c.logoDataUrl,
           email_logo_url: c.logoDataUrl ? c.emailLogoUrl : null,
+          estimate_terms: c.estimateTerms.trim(),
+          estimate_valid_days: c.estimateValidDays,
           disabled_modules: c.disabledModules,
         })
         .eq("id", true);

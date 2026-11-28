@@ -99,3 +99,70 @@
 .est-ticket-list li:first-child { border-top: 0; }
 .est-ticket-list a { font-weight: 600; }
 .est-ticket-total { margin-left: auto; font-family: var(--f-mono); font-variant-numeric: tabular-nums; }
+
+/* ---------- Customer estimate document (S4) ---------- */
+/* The document is paper: white with dark ink in every app theme, like the printout and PDF. */
+.estdoc-toolbar { display: flex; flex-wrap: wrap; align-items: flex-end; gap: var(--sp-3) var(--sp-4); margin-bottom: var(--sp-4); }
+.estdoc-toolbar .field { flex: 1 1 260px; max-width: 420px; }
+.estdoc-actions { display: flex; flex-wrap: wrap; gap: var(--sp-2); }
+.estdoc-stage { background: var(--surface-2); border: 1px solid var(--line); border-radius: var(--radius-lg); padding: var(--sp-5); overflow-x: auto; }
+
+.estdoc {
+  --doc-gap: var(--sp-5);
+  max-width: 8.5in; min-height: 9in; margin: 0 auto; padding: 0.75in;
+  background: var(--paper); color: var(--paper-ink); box-shadow: var(--shadow);
+  font-size: 15px; line-height: 1.5; display: grid; gap: var(--doc-gap); align-content: start;
+}
+.estdoc p { margin: 0; }
+.estdoc-draft { background: var(--warn-soft); color: var(--paper-ink); border: 1px dashed var(--warn); border-radius: var(--radius-sm); padding: var(--sp-2) var(--sp-3); font-size: var(--text-sm); }
+.estdoc-head { display: flex; flex-wrap: wrap; justify-content: space-between; gap: var(--sp-4); padding-bottom: var(--sp-4); border-bottom: 3px solid var(--paper-accent); }
+.estdoc-from { display: flex; gap: var(--sp-3); align-items: flex-start; }
+.estdoc-logo { width: 64px; height: 64px; object-fit: contain; flex: none; }
+.estdoc-mark { width: 48px; height: 48px; }
+.estdoc-company { font-size: 20px; font-weight: 700; line-height: 1.2; margin-bottom: 4px !important; }
+.estdoc-small { font-size: 13px; color: var(--paper-muted); line-height: 1.4; }
+.estdoc-meta { text-align: right; margin-left: auto; }
+.estdoc-kind { font-family: var(--f-display); font-size: 32px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--paper-accent); line-height: 1; margin-bottom: var(--sp-2) !important; }
+.estdoc-meta dl { margin: 0; display: grid; gap: 2px; font-size: 13px; }
+.estdoc-meta dl div { display: flex; justify-content: flex-end; gap: var(--sp-2); }
+.estdoc-meta dt { color: var(--paper-muted); }
+.estdoc-meta dd { margin: 0; font-weight: 600; font-variant-numeric: tabular-nums; }
+.estdoc-label { font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--paper-muted); margin-bottom: var(--sp-1) !important; }
+.estdoc-customer { font-weight: 700; font-size: 16px; }
+.estdoc-title { margin: 0; font-size: 22px; line-height: 1.25; }
+.estdoc-scope p + p, .estdoc-terms p + p { margin-top: var(--sp-2); }
+.estdoc-scope p { white-space: pre-wrap; }
+
+.estdoc-price table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+.estdoc-price td, .estdoc-price th { padding: 6px 0; text-align: left; vertical-align: top; font-weight: 400; }
+.estdoc-price .num { text-align: right; white-space: nowrap; padding-left: var(--sp-3); }
+.estdoc-price tbody { border-top: 1px solid var(--paper-line); }
+.estdoc-sec th { font-weight: 700; padding-top: var(--sp-3); }
+.estdoc-detail { color: var(--paper-muted); text-align: right !important; white-space: nowrap; padding-left: var(--sp-3) !important; width: 1%; }
+.estdoc-sectotal td { color: var(--paper-muted); font-size: 14px; }
+.estdoc-t--subtotal td { font-weight: 700; }
+.estdoc-total th, .estdoc-total td { border-top: 2px solid var(--paper-accent); padding-top: var(--sp-3); font-size: 22px; font-weight: 700; color: var(--paper-accent); }
+
+.estdoc-terms { font-size: 13px; color: var(--paper-muted); }
+.estdoc-sign { display: grid; grid-template-columns: 1fr 1fr; gap: var(--sp-6); padding-top: var(--sp-6); font-size: 12px; color: var(--paper-muted); }
+.estdoc-sign span { display: block; border-top: 1px solid var(--paper-ink); margin-bottom: 4px; }
+
+@media (max-width: 700px) {
+  .estdoc-stage { padding: 0; border: 0; background: none; }
+  .estdoc { padding: var(--sp-4); font-size: 15px; min-height: 0; --doc-gap: var(--sp-4); }
+  .estdoc-meta { text-align: left; margin-left: 0; }
+  .estdoc-meta dl div { justify-content: flex-start; }
+  .estdoc-detail { font-size: 14px; }
+  .estdoc-sign { gap: var(--sp-4); }
+}
+
+/* Printing: only the paper, at full page width. */
+@media print {
+  .sidebar, .topbar, .scrim, .skip-link, .page-head, .estdoc-noprint, .est-totalbar { display: none !important; }
+  .shell, .main-col, .content, .page, .page-body { display: block !important; margin: 0 !important; padding: 0 !important; background: none !important; }
+  .estdoc-stage { padding: 0; border: 0; background: none; overflow: visible; }
+  .estdoc { box-shadow: none; max-width: none; min-height: 0; padding: 0; }
+  .estdoc-price tr, .estdoc-sign { break-inside: avoid; }
+  @page { size: letter; margin: 0.6in; }
+}
+.est-version-actions { display: inline-flex; flex-wrap: wrap; gap: var(--sp-1); justify-content: flex-end; }
