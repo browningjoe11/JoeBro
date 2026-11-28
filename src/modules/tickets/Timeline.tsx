@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { CHANGE_LABELS } from "../../core/contacts/changes";
 import { STAGE_LABELS, type Person, type Stage, type TicketEvent } from "../../core/tickets";
 import { formatDate, formatDateTime, formatMoney } from "./format";
 
@@ -67,6 +68,26 @@ export function Timeline<E extends TicketEvent>({ events, people, context, empty
             ))}
           </>
         );
+      case "contact_changed": {
+        const changes = (e.data.changes ?? {}) as Record<string, { from: unknown; to: unknown }>;
+        const whose = e.data.site ? "the job site's" : "the customer's";
+        return (
+          <>
+            {Object.entries(changes).map(([field, c], i, all) => (
+              <span key={field}>
+                {field === "site_added" ? (
+                  <>added a job site {show(field, c?.to)}</>
+                ) : (
+                  <>
+                    changed {whose} {CHANGE_LABELS[field] ?? field} from {show(field, c?.from)} to {show(field, c?.to)}
+                  </>
+                )}
+                {i < all.length - 1 ? "; " : ""}
+              </span>
+            ))}
+          </>
+        );
+      }
       case "note":
         return (
           <>

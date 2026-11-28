@@ -29,14 +29,15 @@ export interface Ticket extends TicketSummary {
   createdAt: string;
 }
 
-export type EventKind = "created" | "stage_changed" | "updated" | "note";
+/** contact_changed comes from the customer's change log (contact_changes), not ticket_events, and shows on all their tickets. */
+export type EventKind = "created" | "stage_changed" | "updated" | "note" | "contact_changed";
 
 export interface TicketEvent {
   id: string;
   kind: EventKind;
   fromStage: Stage | null;
   toStage: Stage | null;
-  /** created: {title}; stage_changed: {lost_reason?}; updated: {field: {from, to}}; note: {text} */
+  /** created: {title}; stage_changed: {lost_reason?}; updated: {field: {from, to}}; note: {text}; contact_changed: {changes: {field: {from, to}}, site} */
   data: Record<string, unknown>;
   actorId: string | null;
   createdAt: string;

@@ -1,6 +1,15 @@
 import { DEFAULT_TRANSITIONS, START_STAGES, type Stage } from "./stages";
 import type { ContactOption, Person, Ticket, TicketEvent, TicketPatch, TicketsBackend } from "./types";
 
+/**
+ * The customer side of the in-memory store (memoryContacts' backend). When given, tickets read the
+ * customer's name, phone, email and site from it, the way the database joins tickets to contacts,
+ * so an edit on one screen shows on every other.
+ */
+export interface LinkedContacts {
+  get(id: string): Promise<{ name: string; phone: string; email: string; properties: { id: string; street: string; city: string }[] } | null>;
+}
+
 interface MemContact {
   id: string;
   name: string;
@@ -182,7 +191,7 @@ const LOGGED: [keyof TicketPatch, string][] = [
  * the database triggers: allowed stage moves only, a reason to mark lost, and
  * every change written to the timeline.
  */
-export function memoryTickets(opts: { empty?: boolean; people?: Person[] } = {}) {
+export function memoryTickets(opts: { empty?: boolean; people?: Person[]; contacts?: LinkedContacts } = {}) {
   const data = opts.empty ? { contacts: [], properties: [], tickets: [] } : sample();
   const { contacts, properties } = data;
   let tickets = data.tickets;
@@ -222,6 +231,14 @@ export function memoryTickets(opts: { empty?: boolean; people?: Person[] } = {})
       site: site(t.propertyId),
     };
   };
+  /** Live customer details from the linked contacts store, when there is one. */
+  const current = async (t: (typeof tickets)[number]): Promise<Ticket> => {
+    const base = full(t);
+    const c = opts.contacts ? await opts.contacts.get(t.contactId) : null;
+    if (!c) return base;
+    const p = c.properties.find((x) => x.id === t.propertyId);
+    return { ...base, customer: c.name, phone: c.phone, email: c.email, site: p ? `${p.street}, ${p.city}` : base.site };
+  };
   const find = (id: string) => {
     const t = tickets.find((x) => x.id === id);
     if (!t) throw new Error("That ticket no longer exists.");
@@ -231,12 +248,12 @@ export function memoryTickets(opts: { empty?: boolean; people?: Person[] } = {})
   const backend: TicketsBackend = {
     async list() {
       await tick();
-      return tickets.map(full).sort((a, b) => b.number - a.number);
+      return (await Promise.all(tickets.map(current))).sort((a, b) => b.number - a.number);
     },
     async get(number) {
       await tick();
       const t = tickets.find((x) => x.number === number);
-      return t ? full(t) : null;
+      return t ? current(t) : null;
     },
     async events(ticketId) {
       await tick();

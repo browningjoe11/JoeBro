@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from "react";
 import { Link, useParams } from "react-router-dom";
+import { CONTACT_EDITOR_ROLES, mergeTimeline, useContacts, type Contact, type ContactChange } from "../../core/contacts";
 import { ModulePage } from "../../core/ModulePage";
 import { useCurrentUser } from "../../core/currentUser";
 import { useSettings } from "../../core/settings";
@@ -16,6 +17,7 @@ import {
   type Transition,
 } from "../../core/tickets";
 import { Badge, Button, Section, SelectField, Sheet, TextAreaField, TextField } from "../../ui";
+import { EditContact, EditProperty } from "../contacts/EditSheets";
 import { formatMoney, fromDateInput, parseMoney, stageTone, toDateInput } from "./format";
 import { StageBar } from "./StageBar";
 import { Timeline } from "./Timeline";
@@ -23,9 +25,13 @@ import { Timeline } from "./Timeline";
 export function TicketDetail() {
   const { number } = useParams();
   const backend = useTickets();
+  const contacts = useContacts();
   const user = useCurrentUser();
   const [ticket, setTicket] = useState<Ticket | null | undefined>(undefined);
   const [events, setEvents] = useState<TicketEvent[]>([]);
+  const [changes, setChanges] = useState<ContactChange[]>([]);
+  const [editing, setEditing] = useState<{ contact: Contact; what: "contact" | "site" } | null>(null);
+  const [editError, setEditError] = useState<string | null>(null);
   const [transitions, setTransitions] = useState<Transition[]>([]);
   const [people, setPeople] = useState<Person[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -37,12 +43,14 @@ export function TicketDetail() {
     try {
       const t = await backend.get(Number(number));
       setTicket(t);
-      setEvents(t ? await backend.events(t.id) : []);
+      const [ev, log] = t ? await Promise.all([backend.events(t.id), contacts.changes(t.contactId).catch(() => [])]) : [[], []];
+      setEvents(ev);
+      setChanges(log);
       setError(null);
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
     }
-  }, [backend, number]);
+  }, [backend, contacts, number]);
 
   useEffect(() => {
     void load();
@@ -57,6 +65,7 @@ export function TicketDetail() {
   }, [backend, load]);
 
   const peopleById = useMemo(() => new Map(people.map((p) => [p.id, p])), [people]);
+  const timeline = useMemo(() => mergeTimeline(events, changes), [events, changes]);
 
   if (error && !ticket) {
     return (
@@ -105,6 +114,22 @@ export function TicketDetail() {
     }
   }
 
+  const canEditContact = CONTACT_EDITOR_ROLES.includes(user.role);
+  async function startEdit(what: "contact" | "site") {
+    setEditError(null);
+    try {
+      const contact = await contacts.get(t.contactId);
+      if (!contact) throw new Error("That customer no longer exists.");
+      setEditing({ contact, what });
+    } catch (e) {
+      setEditError(e instanceof Error ? e.message : String(e));
+    }
+  }
+  const everywhere = (c: Contact) =>
+    c.tickets.length > 1
+      ? `This is ${c.name}'s own record. Saving changes it on their contact page and on all ${c.tickets.length} of their tickets.`
+      : `This is ${c.name}'s own record. Saving changes it on their contact page and on this ticket.`;
+
   const isBack = (m: Transition) => PIPELINE.indexOf(m.to) < PIPELINE.indexOf(m.from) && m.from !== "lost";
 
   return (
@@ -152,10 +177,35 @@ export function TicketDetail() {
 
       <DetailsSection ticket={t} people={people} canEdit={canEdit} onSaved={load} />
 
-      <Section title="Customer and site" storageKey="tickets.customer">
+      <Section
+        title="Customer and site"
+        storageKey="tickets.customer"
+        info="Phone, email and address belong to the customer, so a change here shows on their contact page and every one of their tickets."
+        actions={
+          canEditContact && (
+            <>
+              <Button size="sm" variant="ghost" onClick={() => void startEdit("contact")}>
+                Edit contact
+              </Button>
+              {t.propertyId && (
+                <Button size="sm" variant="ghost" onClick={() => void startEdit("site")}>
+                  Edit site
+                </Button>
+              )}
+            </>
+          )
+        }
+      >
+        {editError && (
+          <p className="settings-error" role="alert">
+            {editError}
+          </p>
+        )}
         <dl className="facts">
           <dt>Customer</dt>
-          <dd>{t.customer}</dd>
+          <dd>
+            <Link to={`/contacts/${t.contactId}`}>{t.customer}</Link>
+          </dd>
           <dt>Phone</dt>
           <dd>{t.phone ? <a href={`tel:${t.phone.replace(/[^\d+]/g, "")}`}>{t.phone}</a> : "—"}</dd>
           <dt>Email</dt>
@@ -165,15 +215,33 @@ export function TicketDetail() {
         </dl>
       </Section>
 
-      <Section title="Activity" storageKey="tickets.activity" summary={`${events.length} ${events.length === 1 ? "entry" : "entries"}`}>
+      <Section title="Activity" storageKey="tickets.activity" summary={`${timeline.length} ${timeline.length === 1 ? "entry" : "entries"}`}>
         <NoteForm
           onAdd={async (text) => {
             await backend.addNote(t.id, text, user.id);
             await load();
           }}
         />
-        <Timeline events={events} people={peopleById} />
+        <Timeline events={timeline} people={peopleById} />
       </Section>
+
+      {editing?.what === "contact" && (
+        <EditContact contact={editing.contact} notice={everywhere(editing.contact)} onClose={() => setEditing(null)} onSaved={load} />
+      )}
+      {editing?.what === "site" &&
+        (() => {
+          const place = editing.contact.properties.find((p) => p.id === t.propertyId);
+          return place ? (
+            <EditProperty
+              contactId={editing.contact.id}
+              property={place}
+              isOnly={editing.contact.properties.length === 1}
+              notice={everywhere(editing.contact)}
+              onClose={() => setEditing(null)}
+              onSaved={load}
+            />
+          ) : null;
+        })()}
 
       <LostSheet open={losing} busy={moving} error={moveError} onClose={() => setLosing(false)} onConfirm={(reason) => void move("lost", reason)} />
     </ModulePage>
