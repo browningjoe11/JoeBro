@@ -50,6 +50,8 @@ describe("Settings", () => {
 
   it("switches a module off for everyone's menu", async () => {
     renderSettings();
+    // Let the saved settings load before changing them.
+    await waitFor(() => expect(screen.getByRole("textbox", { name: "Company name" })).toHaveValue("Joebros Contracting Services"));
     const nav = screen.getByRole("navigation");
     expect(within(nav).getByRole("link", { name: "Onsite" })).toBeInTheDocument();
     const modules = screen.getByRole("heading", { name: "Modules" }).closest("section")!;

@@ -6,7 +6,7 @@ import { logoFromFile } from "./logo";
 type TextKey = Exclude<keyof CompanySettings, "logoDataUrl" | "disabledModules">;
 
 export function CompanySection() {
-  const { backend, company, refresh } = useSettings();
+  const { backend, company, loading, refresh } = useSettings();
   const [draft, setDraft] = useState<CompanySettings>(company);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<{ tone: "ok" | "bad"; text: string } | null>(null);
@@ -82,19 +82,21 @@ export function CompanySection() {
             <p className="settings-help">A square image looks best. It's shrunk to 256 pixels.</p>
           </div>
         </div>
-        <div className="settings-grid">
-          {field("name", "Company name", { required: true })}
-          {field("licenseNumber", "Delaware business license number", { info: "Printed on estimates and invoices." })}
-          {field("phone", "Phone", { type: "tel", inputMode: "tel" })}
-          {field("email", "Email", { type: "email", inputMode: "email" })}
-          {field("website", "Website", { inputMode: "url" })}
-          {field("street", "Street address")}
-          {field("city", "City")}
-          <div className="settings-grid-pair">
-            {field("state", "State")}
-            {field("zip", "ZIP", { inputMode: "numeric" })}
+        <fieldset className="plain-fieldset" disabled={loading}>
+          <div className="settings-grid">
+            {field("name", "Company name", { required: true })}
+            {field("licenseNumber", "Delaware business license number", { info: "Printed on estimates and invoices." })}
+            {field("phone", "Phone", { type: "tel", inputMode: "tel" })}
+            {field("email", "Email", { type: "email", inputMode: "email" })}
+            {field("website", "Website", { inputMode: "url" })}
+            {field("street", "Street address")}
+            {field("city", "City")}
+            <div className="settings-grid-pair">
+              {field("state", "State")}
+              {field("zip", "ZIP", { inputMode: "numeric" })}
+            </div>
           </div>
-        </div>
+        </fieldset>
         <div className="settings-actions">
           <Button type="submit" variant="primary" disabled={busy || !dirty}>
             {busy ? "Saving…" : "Save company profile"}
