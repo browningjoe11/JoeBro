@@ -17,6 +17,10 @@ export interface CompanySettings {
    * images stored inside an email). Set by publishLogo when an admin saves.
    */
   emailLogoUrl: string | null;
+  /** Printed at the bottom of every customer estimate. One paragraph per line. */
+  estimateTerms: string;
+  /** Days an estimate's price holds after its version is saved. */
+  estimateValidDays: number;
   /** Module ids an admin switched off. */
   disabledModules: string[];
 }
@@ -68,6 +72,14 @@ export interface SettingsBackend {
   publishLogo(dataUrl: string): Promise<string>;
 }
 
+/** Same wording as the database default (migration 20261128210000). */
+export const DEFAULT_ESTIMATE_TERMS = [
+  "The price above covers the labor, materials and cleanup for the work described. Anything not listed is not included.",
+  "Changes to the work are priced and agreed in writing before they are done.",
+  "Hidden conditions found once work begins (such as rot or damage behind walls) are shown to you and priced before any extra work.",
+  "Payment terms are set out when you accept this estimate.",
+].join("\n");
+
 export const DEFAULT_COMPANY: CompanySettings = {
   name: "Joebros Contracting Services",
   licenseNumber: "",
@@ -80,6 +92,8 @@ export const DEFAULT_COMPANY: CompanySettings = {
   zip: "",
   logoDataUrl: null,
   emailLogoUrl: null,
+  estimateTerms: DEFAULT_ESTIMATE_TERMS,
+  estimateValidDays: 30,
   disabledModules: [],
 };
 

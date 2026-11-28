@@ -1,6 +1,7 @@
 import { Route, Routes } from "react-router-dom";
 import type { ModuleDefinition } from "../../core/modules";
 import { EstimateBuilder } from "./EstimateBuilder";
+import { EstimateDocumentPage } from "./EstimateDocumentPage";
 import { EstimateList } from "./EstimateList";
 import { NewEstimate } from "./NewEstimate";
 import "./estimates.css";
@@ -11,6 +12,7 @@ function SalesPage() {
       <Route index element={<EstimateList />} />
       <Route path="new" element={<NewEstimate />} />
       <Route path="estimates/:id" element={<EstimateBuilder />} />
+      <Route path="estimates/:id/document" element={<EstimateDocumentPage />} />
     </Routes>
   );
 }
@@ -18,7 +20,7 @@ function SalesPage() {
 export const salesModule: ModuleDefinition = {
   id: "sales",
   label: "Sales",
-  description: "Estimates, and later customer emails and signatures.",
+  description: "Estimates and the customer estimate document, and later customer emails and signatures.",
   icon: "sales",
   group: "workflow",
   order: 30,

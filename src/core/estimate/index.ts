@@ -3,3 +3,5 @@ export * from "./store";
 export { EstimatesProvider, useEstimates } from "./EstimatesProvider";
 export { memoryEstimates } from "./memoryEstimates";
 export { supabaseEstimates } from "./supabaseEstimates";
+export * from "./document";
+export { downloadEstimatePdf, estimatePdf, formatDocDate, logoAsPng, pdfSafe } from "./pdf";

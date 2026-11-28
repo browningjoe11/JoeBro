@@ -85,6 +85,16 @@ describe("company settings", () => {
       /company_settings_logo_size/,
     );
   });
+
+  it("starts with estimate terms that match the app's default, valid for 30 days, and only admins change them (S4)", async () => {
+    const { DEFAULT_ESTIMATE_TERMS } = await import("../../src/core/settings/types");
+    const [row] = await as(SALES, (tx) => rows<{ estimate_terms: string; estimate_valid_days: number }>(tx, "select estimate_terms, estimate_valid_days from company_settings"));
+    expect(row).toEqual({ estimate_terms: DEFAULT_ESTIMATE_TERMS, estimate_valid_days: 30 });
+    expect(await as(SALES, (tx) => changed(tx, "update company_settings set estimate_terms = 'Nope'"))).toBe(0);
+    expect(await as(ADMIN, (tx) => changed(tx, "update company_settings set estimate_terms = 'Net 30.', estimate_valid_days = 14"))).toBe(1);
+    await expect(as(ADMIN, (tx) => tx.query("update company_settings set estimate_valid_days = 0"))).rejects.toThrow(/company_settings_estimate_valid_days/);
+    await expect(as(ADMIN, (tx) => tx.query("update company_settings set estimate_terms = repeat('x', 5001)"))).rejects.toThrow(/company_settings_estimate_terms_length/);
+  });
 });
 
 describe("team list", () => {

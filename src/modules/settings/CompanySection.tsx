@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { useSettings, type CompanySettings } from "../../core/settings";
-import { Button, Section, TextField } from "../../ui";
+import { Button, Section, TextAreaField, TextField } from "../../ui";
 import { logoFromFile } from "./logo";
 
-type TextKey = Exclude<keyof CompanySettings, "logoDataUrl" | "emailLogoUrl" | "disabledModules">;
+type TextKey = Exclude<keyof CompanySettings, "logoDataUrl" | "emailLogoUrl" | "disabledModules" | "estimateTerms" | "estimateValidDays">;
 
 export function CompanySection() {
   const { backend, company, loading, refresh } = useSettings();
@@ -23,6 +23,9 @@ export function CompanySection() {
   async function save(e?: FormEvent) {
     e?.preventDefault();
     if (!draft.name.trim()) return setMessage({ tone: "bad", text: "Company name is required." });
+    if (!Number.isInteger(draft.estimateValidDays) || draft.estimateValidDays < 1 || draft.estimateValidDays > 365) {
+      return setMessage({ tone: "bad", text: "Keep estimates valid for 1 to 365 days." });
+    }
     setBusy(true);
     setMessage(null);
     try {
@@ -100,6 +103,26 @@ export function CompanySection() {
               {field("state", "State")}
               {field("zip", "ZIP", { inputMode: "numeric" })}
             </div>
+          </div>
+          <h3 className="settings-subhead">Customer estimates</h3>
+          <div className="settings-grid">
+            <TextAreaField
+              label="Terms printed on every estimate"
+              rows={6}
+              value={draft.estimateTerms}
+              onChange={(e) => setDraft({ ...draft, estimateTerms: e.target.value })}
+              hint="One paragraph per line. Printed at the bottom of the web page and the PDF."
+            />
+            <TextField
+              label="Estimates are valid for (days)"
+              type="number"
+              inputMode="numeric"
+              min={1}
+              max={365}
+              value={Number.isFinite(draft.estimateValidDays) ? String(draft.estimateValidDays) : ""}
+              onChange={(e) => setDraft({ ...draft, estimateValidDays: e.target.value === "" ? Number.NaN : Number(e.target.value) })}
+              info="Printed as “Valid until” a date this many days after the version was saved."
+            />
           </div>
         </fieldset>
         <div className="settings-actions">
