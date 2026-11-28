@@ -13,6 +13,7 @@ import { CrewsProvider, memoryCrews, type CrewsBackend } from "./core/crews";
 import { ImportProvider, memoryImport, type ImportBackend } from "./core/import";
 import { EstimatesProvider, memoryEstimates, type EstimatesBackend } from "./core/estimate";
 import { memorySignatures, SignaturesProvider, type SignatureBackend } from "./core/signature";
+import { memoryPhotos, PhotosProvider, type PhotosBackend } from "./core/photos";
 import { MODULES, modulesFor } from "./modules/registry";
 
 interface AppProps {
@@ -38,6 +39,8 @@ interface AppProps {
   estimates?: EstimatesBackend;
   /** Where email signatures live. Preview mode keeps them in memory. */
   signatures?: SignatureBackend;
+  /** Where before and after photos live. Preview mode keeps them in memory. */
+  photos?: PhotosBackend;
 }
 
 type Backends = {
@@ -50,10 +53,11 @@ type Backends = {
   crews?: CrewsBackend;
   estimates?: EstimatesBackend;
   signatures?: SignatureBackend;
+  photos?: PhotosBackend;
 };
 
-export function App({ auth = null, initialRole = "admin", settings, tickets, contacts, calendar, priceBook, crmImport, crews, estimates, signatures }: AppProps) {
-  const backends = { settings, tickets, contacts, calendar, priceBook, crmImport, crews, estimates, signatures };
+export function App({ auth = null, initialRole = "admin", settings, tickets, contacts, calendar, priceBook, crmImport, crews, estimates, signatures, photos }: AppProps) {
+  const backends = { settings, tickets, contacts, calendar, priceBook, crmImport, crews, estimates, signatures, photos };
   if (!auth) return <PreviewApp initialRole={initialRole} backends={backends} />;
   return (
     <AuthProvider client={auth}>
@@ -115,6 +119,7 @@ function WithData({ backends, user, children }: { backends: Backends; user: Curr
       crmImport: memoryImport().backend,
       crews: memoryCrews().backend,
       signatures: memorySignatures().backend,
+      photos: memoryPhotos().backend,
     };
   });
   return (
@@ -127,7 +132,9 @@ function WithData({ backends, user, children }: { backends: Backends; user: Curr
                 <CalendarProvider backend={backends.calendar ?? fallback.calendar}>
                   <ImportProvider backend={backends.crmImport ?? fallback.crmImport}>
                     <EstimatesProvider backend={backends.estimates ?? fallback.estimates}>
-                      <SignaturesProvider backend={backends.signatures ?? fallback.signatures}>{children}</SignaturesProvider>
+                      <SignaturesProvider backend={backends.signatures ?? fallback.signatures}>
+                        <PhotosProvider backend={backends.photos ?? fallback.photos}>{children}</PhotosProvider>
+                      </SignaturesProvider>
                     </EstimatesProvider>
                   </ImportProvider>
                 </CalendarProvider>

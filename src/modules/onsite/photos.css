@@ -1,0 +1,52 @@
+/* ---------- Before and after photos (M3): thumb-sized buttons, phone first ---------- */
+.photos { display: grid; gap: var(--sp-3); }
+
+.photos-add { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: var(--sp-3); }
+.photos-add-btn { position: relative; display: grid; }
+/* The real file input stays in the page for keyboards and screen readers, under its big label. */
+.photos-file { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; pointer-events: none; }
+.photos-btn {
+  display: flex; align-items: center; justify-content: center; min-height: 56px; padding: 0 var(--sp-4);
+  border: 2px solid var(--brand); border-radius: var(--radius); background: var(--surface); color: var(--brand);
+  font-size: var(--text-lg); font-weight: 700; text-align: center; cursor: pointer; user-select: none;
+}
+.photos-btn:hover { background: var(--brand-soft); }
+.photos-file:focus-visible + .photos-btn { outline: 3px solid var(--hivis); outline-offset: 2px; }
+.photos-btn--after { background: var(--brand); color: var(--brand-ink); }
+.photos-btn--after:hover { background: var(--brand-hover); }
+
+.photos-queue { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--sp-2); }
+.photos-up {
+  display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-2) var(--sp-3); padding: var(--sp-2) var(--sp-3);
+  border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface-2);
+}
+.photos-up-name { font-weight: 600; overflow-wrap: anywhere; }
+.photos-up-status { color: var(--muted); }
+.photos-up--uploading .photos-up-status, .photos-up--shrinking .photos-up-status { color: var(--brand); }
+.photos-up--failed { border-color: var(--bad); background: var(--bad-soft); }
+.photos-up--failed .photos-up-status { color: var(--bad); flex: 1 1 100%; }
+.photos-up-actions { display: flex; gap: var(--sp-2); }
+
+.photos-group { display: grid; gap: var(--sp-2); }
+.photos-group-head { margin: 0; display: flex; align-items: center; gap: var(--sp-2); font-size: var(--text-sm); font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted); }
+.photos-count { display: inline-grid; place-items: center; min-width: 24px; height: 24px; padding: 0 var(--sp-1); border-radius: 12px; background: var(--brand-soft); color: var(--brand); font-size: var(--text-sm); letter-spacing: 0; }
+.photos-none { margin: 0; color: var(--muted); }
+
+.photos-grid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: var(--sp-2); }
+.photos-thumb { display: block; width: 100%; padding: 0; border: 0; background: none; color: inherit; text-align: left; cursor: pointer; }
+.photos-thumb img { display: block; width: 100%; aspect-ratio: 1; object-fit: cover; border: 1px solid var(--line); border-radius: var(--radius); background: var(--line); }
+.photos-thumb:focus-visible { outline: 3px solid var(--hivis); outline-offset: 2px; }
+.photos-cap { display: block; margin-top: var(--sp-1); color: var(--muted); font-size: var(--text-sm); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+.photos-view { display: grid; gap: var(--sp-3); }
+.photos-big { display: block; border-radius: var(--radius); overflow: hidden; background: var(--line); }
+.photos-big img { display: block; width: 100%; max-height: 70vh; object-fit: contain; }
+.photos-tagpick { display: flex; gap: var(--sp-2); }
+.photos-tagpick .btn { flex: 1; }
+.photos-confirm { margin-right: auto; font-weight: 600; }
+
+@media (max-width: 600px) {
+  .photos-add { grid-template-columns: 1fr 1fr; }
+  .photos-btn { font-size: var(--text-md); padding: 0 var(--sp-2); }
+  .photos-grid { grid-template-columns: repeat(3, 1fr); }
+}

@@ -8,6 +8,7 @@ import { ModulePage } from "../../core/ModulePage";
 import { dayStops, directionsUrl, fullAddress, techForLogin, telHref, type DayOwner } from "../../core/onsite";
 import { useTickets } from "../../core/tickets";
 import { Badge, Button, SelectField } from "../../ui";
+import { PhotoBoard } from "./TicketPhotos";
 import "./myDay.css";
 
 /** Everything a tech needs at one stop: the booking, plus the ticket's customer, scope and site. */
@@ -20,6 +21,8 @@ export interface Stop {
   accessNotes: string;
   scope: string;
   ticketNumber: number | null;
+  /** The ticket's id, for its photos. */
+  ticketId: string | null;
 }
 
 const DAY = new Intl.DateTimeFormat("en-US", { weekday: "long", month: "long", day: "numeric" });
@@ -89,11 +92,12 @@ export function MyDay() {
         accessNotes: "",
         scope: "",
         ticketNumber: e.ticketNumber,
+        ticketId: null,
       };
       if (e.ticketNumber === null) return base;
       const t = await tickets.get(e.ticketNumber);
       if (!t) return base;
-      const stop: Stop = { ...base, title: t.title, customer: t.customer, phone: t.phone, scope: t.scope, address: fullAddress(t.site || e.site) };
+      const stop: Stop = { ...base, ticketId: t.id, title: t.title, customer: t.customer, phone: t.phone, scope: t.scope, address: fullAddress(t.site || e.site) };
       // Site notes (gate codes, lockbox, dogs) and the full address live on the customer's property.
       try {
         const c = t.propertyId ? await contacts.get(t.contactId) : null;
@@ -246,6 +250,13 @@ function StopCard({ stop, n }: { stop: Stop; n: number }) {
         <section className="stop-block" aria-label="Booking notes">
           <h4>Notes from the office</h4>
           <p className="stop-text">{e.notes}</p>
+        </section>
+      )}
+
+      {stop.ticketId && (
+        <section className="stop-block" aria-label="Photos">
+          <h4>Before and after photos</h4>
+          <PhotoBoard ticketId={stop.ticketId} />
         </section>
       )}
 
