@@ -12,6 +12,7 @@ import { CalendarProvider, memoryCalendar, type CalendarBackend } from "./core/c
 import { CrewsProvider, memoryCrews, type CrewsBackend } from "./core/crews";
 import { GeoProvider, memoryGeo, type GeoBackend } from "./core/map";
 import { ImportProvider, memoryImport, type ImportBackend } from "./core/import";
+import { EstimatesProvider, memoryEstimates, type EstimatesBackend } from "./core/estimate";
 import { memorySignatures, SignaturesProvider, type SignatureBackend } from "./core/signature";
 import { MODULES, modulesFor } from "./modules/registry";
 
@@ -36,6 +37,8 @@ interface AppProps {
   crews?: CrewsBackend;
   /** Turns job-site addresses into map positions. Preview mode uses fixed sample positions. */
   geo?: GeoBackend;
+  /** Where estimates and their saved versions live. Preview mode keeps them in memory. */
+  estimates?: EstimatesBackend;
   /** Where email signatures live. Preview mode keeps them in memory. */
   signatures?: SignatureBackend;
 }
@@ -49,11 +52,12 @@ type Backends = {
   crmImport?: ImportBackend;
   crews?: CrewsBackend;
   geo?: GeoBackend;
+  estimates?: EstimatesBackend;
   signatures?: SignatureBackend;
 };
 
-export function App({ auth = null, initialRole = "admin", settings, tickets, contacts, calendar, priceBook, crmImport, crews, geo, signatures }: AppProps) {
-  const backends = { settings, tickets, contacts, calendar, priceBook, crmImport, crews, geo, signatures };
+export function App({ auth = null, initialRole = "admin", settings, tickets, contacts, calendar, priceBook, crmImport, crews, geo, estimates, signatures }: AppProps) {
+  const backends = { settings, tickets, contacts, calendar, priceBook, crmImport, crews, geo, estimates, signatures };
   if (!auth) return <PreviewApp initialRole={initialRole} backends={backends} />;
   return (
     <AuthProvider client={auth}>
@@ -103,9 +107,12 @@ function WithData({ backends, user, children }: { backends: Backends; user: Curr
   const [fallback] = useState(() => {
     // Tickets read customer details from the contacts store, as the database joins them, so edits show everywhere.
     const contacts = memoryContacts().backend;
+    const tickets = memoryTickets({ contacts }).backend;
     return {
       settings: memorySettings().backend,
-      tickets: memoryTickets({ contacts }).backend,
+      tickets,
+      // Saving a version sets the ticket's estimated value, as the database does.
+      estimates: memoryEstimates({ onVersion: (ticketId, total) => tickets.update(ticketId, { estimatedValue: total }) }).backend,
       contacts,
       calendar: memoryCalendar().backend,
       priceBook: memoryPriceBook().backend,
@@ -125,7 +132,9 @@ function WithData({ backends, user, children }: { backends: Backends; user: Curr
                 <CalendarProvider backend={backends.calendar ?? fallback.calendar}>
                   <GeoProvider backend={backends.geo ?? fallback.geo}>
                     <ImportProvider backend={backends.crmImport ?? fallback.crmImport}>
-                      <SignaturesProvider backend={backends.signatures ?? fallback.signatures}>{children}</SignaturesProvider>
+                      <EstimatesProvider backend={backends.estimates ?? fallback.estimates}>
+                        <SignaturesProvider backend={backends.signatures ?? fallback.signatures}>{children}</SignaturesProvider>
+                      </EstimatesProvider>
                     </ImportProvider>
                   </GeoProvider>
                 </CalendarProvider>
