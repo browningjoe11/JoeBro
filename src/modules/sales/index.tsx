@@ -1,26 +1,24 @@
-import { ComingSoon, ModulePage } from "../../core/ModulePage";
+import { Route, Routes } from "react-router-dom";
 import type { ModuleDefinition } from "../../core/modules";
+import { EstimateBuilder } from "./EstimateBuilder";
+import { EstimateList } from "./EstimateList";
+import { NewEstimate } from "./NewEstimate";
+import "./estimates.css";
 
 function SalesPage() {
   return (
-    <ModulePage title="Sales" description="Site visits, estimates and customer signatures.">
-      <ComingSoon
-        chunk="S1–S9"
-        items={[
-          "Estimate builder with time, materials, adders and multipliers",
-          "Live total as you type",
-          "Personalized estimate emails and e-signature",
-          "Pre-estimate site visit scheduling",
-        ]}
-      />
-    </ModulePage>
+    <Routes>
+      <Route index element={<EstimateList />} />
+      <Route path="new" element={<NewEstimate />} />
+      <Route path="estimates/:id" element={<EstimateBuilder />} />
+    </Routes>
   );
 }
 
 export const salesModule: ModuleDefinition = {
   id: "sales",
   label: "Sales",
-  description: "Site visits, estimates and customer signatures.",
+  description: "Estimates, and later customer emails and signatures.",
   icon: "sales",
   group: "workflow",
   order: 30,
