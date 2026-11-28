@@ -7,6 +7,7 @@ import type { Role } from "./core/modules";
 import { memoryPriceBook, PriceBookProvider, type PriceBookBackend } from "./core/pricebook";
 import { memorySettings, SettingsProvider, useSettings, type SettingsBackend } from "./core/settings";
 import { memoryTickets, TicketsProvider, type TicketsBackend } from "./core/tickets";
+import { CalendarProvider, memoryCalendar, type CalendarBackend } from "./core/calendar";
 import { MODULES, modulesFor } from "./modules/registry";
 
 interface AppProps {
@@ -18,14 +19,16 @@ interface AppProps {
   settings?: SettingsBackend;
   /** Where tickets live. Preview mode uses in-memory sample tickets. */
   tickets?: TicketsBackend;
+  /** Where calendar bookings live. Preview mode uses in-memory sample bookings. */
+  calendar?: CalendarBackend;
   /** Where the price book lives. Preview mode uses in-memory sample items. */
   priceBook?: PriceBookBackend;
 }
 
-type Backends = { settings?: SettingsBackend; tickets?: TicketsBackend; priceBook?: PriceBookBackend };
+type Backends = { settings?: SettingsBackend; tickets?: TicketsBackend; calendar?: CalendarBackend; priceBook?: PriceBookBackend };
 
-export function App({ auth = null, initialRole = "admin", settings, tickets, priceBook }: AppProps) {
-  const backends = { settings, tickets, priceBook };
+export function App({ auth = null, initialRole = "admin", settings, tickets, calendar, priceBook }: AppProps) {
+  const backends = { settings, tickets, calendar, priceBook };
   if (!auth) return <PreviewApp initialRole={initialRole} backends={backends} />;
   return (
     <AuthProvider client={auth}>
@@ -74,13 +77,16 @@ function WithData({ backends, user, children }: { backends: Backends; user: Curr
   const [fallback] = useState(() => ({
     settings: memorySettings().backend,
     tickets: memoryTickets().backend,
+    calendar: memoryCalendar().backend,
     priceBook: memoryPriceBook().backend,
   }));
   return (
     <CurrentUserProvider user={user}>
       <SettingsProvider backend={backends.settings ?? fallback.settings} catalog={MODULES}>
         <TicketsProvider backend={backends.tickets ?? fallback.tickets}>
-          <PriceBookProvider backend={backends.priceBook ?? fallback.priceBook}>{children}</PriceBookProvider>
+          <PriceBookProvider backend={backends.priceBook ?? fallback.priceBook}>
+            <CalendarProvider backend={backends.calendar ?? fallback.calendar}>{children}</CalendarProvider>
+          </PriceBookProvider>
         </TicketsProvider>
       </SettingsProvider>
     </CurrentUserProvider>

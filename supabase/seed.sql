@@ -1,6 +1,6 @@
 -- Sample data so every screen has something to show while it's being built.
 -- Every row is marked is_example = true and can be removed in one step:
---   delete from public.tickets where is_example; delete from public.contacts where is_example;
+--   delete from public.calendar_events where is_example; delete from public.price_items where is_example; delete from public.tickets where is_example; delete from public.contacts where is_example;
 -- Safe to run more than once (fixed ids, on conflict do nothing).
 
 insert into public.contacts (id, first_name, last_name, email, phone, preferred_contact, lead_source, notes, is_example) values
@@ -34,6 +34,22 @@ insert into public.tickets (id, contact_id, property_id, title, trade, scope, st
   ('00000000-0000-4000-c000-000000000005', '00000000-0000-4000-a000-000000000003', '00000000-0000-4000-b000-000000000003',
    'Screened porch addition', 'Carpentry', 'Screened porch on existing patio.',
    'lost', 'Repeat customer', 18900.00, null, 'Timing: customer postponed to next year.', true)
+on conflict (id) do nothing;
+
+-- Calendar (S8): a few bookings in the current week, Delaware time (Monday = start of week).
+insert into public.calendar_events (id, kind, status, title, starts_at, ends_at, ticket_id, notes, is_example)
+select v.id::uuid, v.kind::public.calendar_event_kind, v.status::public.calendar_event_status, v.title,
+       (w.monday + v.starts) at time zone 'America/New_York',
+       (w.monday + v.ends) at time zone 'America/New_York',
+       v.ticket_id::uuid, v.notes, true
+from (select date_trunc('week', now() at time zone 'America/New_York') as monday) w,
+(values
+  ('00000000-0000-4000-d000-000000000001', 'other',      'confirmed', 'Supplier pickup at lumber yard',  interval '7 hours',          interval '8 hours',            null::text,                             'Composite boards for the deck.'),
+  ('00000000-0000-4000-d000-000000000002', 'site_visit', 'confirmed', 'Site visit: storm-damaged siding', interval '1 day 9 hours',   interval '1 day 10 hours',     '00000000-0000-4000-c000-000000000002', 'Measure the north wall.'),
+  ('00000000-0000-4000-d000-000000000003', 'job',        'tentative', 'Bathroom refresh at rental',       interval '2 days 8 hours',  interval '2 days 16 hours',    '00000000-0000-4000-c000-000000000003', 'Pencilled in, waiting on vanity delivery.'),
+  ('00000000-0000-4000-d000-000000000004', 'job',        'tentative', 'Bathroom refresh at rental',       interval '3 days 8 hours',  interval '3 days 12 hours',    '00000000-0000-4000-c000-000000000003', null),
+  ('00000000-0000-4000-d000-000000000005', 'site_visit', 'confirmed', 'Site visit: fence repair',         interval '3 days 13 hours', interval '3 days 14 hours',    '00000000-0000-4000-c000-000000000004', null)
+) as v(id, kind, status, title, starts, ends, ticket_id, notes)
 on conflict (id) do nothing;
 
 -- Starter price book (chunk S1). Example numbers only: edit or retire them in Price book.

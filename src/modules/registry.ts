@@ -1,6 +1,7 @@
 import type { ModuleDefinition, Role } from "../core/modules";
 import { dashboardModule } from "./dashboard";
 import { ticketsModule } from "./tickets";
+import { calendarModule } from "./calendar";
 import { contactsModule } from "./contacts";
 import { salesModule } from "./sales";
 import { operationsModule } from "./operations";
@@ -14,6 +15,7 @@ import { styleguideModule } from "./styleguide";
 /** Every module in the app. Add new modules here; menu and routes follow automatically. */
 export const MODULES: readonly ModuleDefinition[] = [
   dashboardModule,
+  calendarModule,
   ticketsModule,
   contactsModule,
   salesModule,
