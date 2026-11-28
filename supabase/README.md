@@ -76,6 +76,48 @@ delete from public.tickets where is_example;
 delete from public.contacts where is_example;
 ```
 
+## Backups (chunk F9)
+
+The free Supabase plan keeps no backups of its own, so the **Nightly backup** GitHub Action (`.github/workflows/backup.yml`) makes one every night at 2:17 AM Delaware time (3:17 AM in summer). It can also be started any time from Actions → Nightly backup → Run workflow.
+
+Each run:
+
+1. Dumps the live database with the Supabase CLI into three files, the same ones Supabase's own restore guide uses: `roles.sql`, `schema.sql` (tables, triggers, security policies) and `data.sql` (every row, sign-in accounts included).
+2. **Test restore:** starts an empty Supabase database on the GitHub runner, restores the three files into it and checks that every table has exactly as many rows as the backup (`scripts/backup/verify-restore.sh`). If anything doesn't match, the run fails and nothing is saved.
+3. Locks the three files in a 7z archive with AES-256 and the `BACKUP_PASSWORD` secret, and keeps it on the run as `joebro-backup-YYYY-MM-DD` for 30 days.
+
+This repository is public. Anyone signed in to GitHub can download a run's files and read its log, so the archive is always encrypted, hidden file names included, and the log prints only totals, never customer data.
+
+### Setting it up
+
+Besides the two database secrets above, add a third repository secret, `BACKUP_PASSWORD`: a long password you pick (four or more random words works well). Keep it in your password manager. **Without it no backup can be opened**, and nobody, Claude included, can recover it. Until it is set, each run still dumps and test-restores, then fails with "no backup was saved".
+
+### Checking it
+
+Open the repo's Actions tab → Nightly backup. Each morning's run should have a green check and, at the bottom of its page under Artifacts, that day's `joebro-backup-…` file. A red X means no backup that night; open the run to see which step failed.
+
+GitHub pauses scheduled actions in a public repository after 60 days with no commits. If that happens, the Actions tab shows a banner with a button to turn it back on.
+
+### Restoring
+
+1. Download the artifact from the run you want (a `.zip`), unzip it, and open the `.7z` inside with [7-Zip](https://www.7-zip.org/) (Windows) or Keka (Mac) using `BACKUP_PASSWORD`. You get `roles.sql`, `schema.sql` and `data.sql`.
+2. Restore into an **empty** database: a new Supabase project is safest. The live database already has these tables, so restoring over it fails instead of overwriting anything.
+3. In the new project, open Connect and copy the Session pooler connection string. With `psql` installed (it comes with PostgreSQL), run from the folder holding the three files:
+
+   ```sh
+   psql --single-transaction -v ON_ERROR_STOP=1 \
+     --file roles.sql \
+     --file schema.sql \
+     --command 'SET session_replication_role = replica' \
+     --file data.sql \
+     --dbname "<connection string>"
+   ```
+
+   It all goes in as one step: if any line fails, nothing is kept.
+4. Point the app at the new project: the Cloudflare Pages variables, `SUPABASE_PROJECT_ID` in both workflows, the auth settings (site URL, redirect URLs, sign-ups off) and the `invite-user` edge function.
+
+To try a restore on your own computer instead, run `supabase db start` in an empty folder that has a `supabase/config.toml`, then `scripts/backup/verify-restore.sh <folder with the three files> postgresql://postgres:postgres@127.0.0.1:54322/postgres`.
+
 ## How changes reach Supabase
 
 When a change to `supabase/` or `.github/workflows/database.yml` is pushed to `main`, the **Database** GitHub Action links the project and runs `supabase db push --remote` (Supabase CLI 3.4.0). That applies migration files to the linked project and does not load `seed.sql`. It needs two repository secrets (GitHub → repo Settings → Secrets and variables → Actions):
