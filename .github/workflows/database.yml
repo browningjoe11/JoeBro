@@ -1,10 +1,12 @@
 name: Database
-# Applies new files in supabase/migrations (and the sample data in seed.sql)
-# to the Supabase project whenever they land on main.
+# Applies new files in supabase/migrations to the linked Supabase project
+# when they land on main. seed.sql is not applied; sample data stays local.
 on:
   push:
     branches: [main]
-    paths: ["supabase/**"]
+    paths:
+      - "supabase/**"
+      - ".github/workflows/database.yml"
   workflow_dispatch:
 
 concurrency:
@@ -33,10 +35,10 @@ jobs:
       - uses: supabase/setup-cli@v1
         if: steps.secrets.outputs.ready == 'true'
         with:
-          version: latest
+          version: 3.4.0
       - name: Link project
         if: steps.secrets.outputs.ready == 'true'
-        run: supabase link --project-ref "$SUPABASE_PROJECT_ID" --password "$SUPABASE_DB_PASSWORD"
-      - name: Apply migrations and sample data
+        run: supabase link --project-ref "$SUPABASE_PROJECT_ID"
+      - name: Apply migrations
         if: steps.secrets.outputs.ready == 'true'
-        run: supabase db push --include-seed --password "$SUPABASE_DB_PASSWORD"
+        run: supabase db push --remote --yes --password "$SUPABASE_DB_PASSWORD"

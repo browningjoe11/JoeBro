@@ -56,7 +56,7 @@ Admins, sales and operations see, add, move and delete bookings. Reviewers see t
 
 ## Sample data
 
-`seed.sql` adds four example customers, five example tickets and five calendar bookings in the current week, all marked `is_example = true`. Remove them later with:
+`seed.sql` adds four example customers, five example tickets and five calendar bookings in the current week, all marked `is_example = true`. `npm test` loads it into an in-memory database. The Database action does not load it into the live project. Remove example rows later with:
 
 ```sql
 delete from public.calendar_events where is_example;
@@ -66,7 +66,7 @@ delete from public.contacts where is_example;
 
 ## How changes reach Supabase
 
-When a change to `supabase/` is merged into `main`, the **Database** GitHub Action runs `supabase db push --include-seed`. It needs two repository secrets (GitHub → repo Settings → Secrets and variables → Actions):
+When a change to `supabase/` or `.github/workflows/database.yml` is pushed to `main`, the **Database** GitHub Action links the project and runs `supabase db push --remote` (Supabase CLI 3.4.0). That applies migration files to the linked project and does not load `seed.sql`. It needs two repository secrets (GitHub → repo Settings → Secrets and variables → Actions):
 
 - `SUPABASE_ACCESS_TOKEN`: a personal access token from supabase.com/dashboard/account/tokens
 - `SUPABASE_DB_PASSWORD`: the database password set when the project was created (reset it under Project Settings → Database if needed)
