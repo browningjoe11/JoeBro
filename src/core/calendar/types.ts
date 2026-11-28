@@ -33,6 +33,8 @@ export interface CalendarEvent {
   ticketNumber: number | null;
   /** Job-site address from the ticket. */
   site: string;
+  /** The ticket's job site with its map position (null coordinates until the address is looked up). Used by the map. */
+  place?: SitePlace | null;
   /** Crew doing the work. The booking takes the crew's color unless `color` is set. */
   crewId: string | null;
   assignedTo: string | null;
@@ -40,6 +42,17 @@ export interface CalendarEvent {
   color: EventColor | null;
   notes: string;
   isExample: boolean;
+}
+
+/** A ticket's job site as the map needs it. Coordinates are saved on the property once looked up. */
+export interface SitePlace {
+  propertyId: string;
+  street: string;
+  city: string;
+  state: string;
+  zip: string;
+  lat: number | null;
+  lng: number | null;
 }
 
 export interface NewCalendarEvent {

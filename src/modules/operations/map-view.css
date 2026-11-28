@@ -1,0 +1,28 @@
+/* Job map view (O3): stops by crew on the left, the map on the right; stacked on phones with the map first. */
+.map-layout { display: grid; grid-template-columns: minmax(280px, 360px) 1fr; gap: var(--sp-4); margin-top: var(--sp-4); height: calc(100vh - 320px); min-height: 460px; }
+.map-side { overflow-y: auto; display: grid; align-content: start; gap: var(--sp-3); padding-right: var(--sp-1); }
+.map-main { position: relative; min-height: 360px; }
+.job-map-loading { display: grid; place-items: center; height: 100%; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface-2); }
+.map-date input { height: 32px; padding: 0 var(--sp-2); border: 1px solid var(--line-strong); border-radius: 6px; background: var(--surface); color: var(--ink); font: inherit; font-size: var(--text-sm); }
+.map-count { margin: 0; font-size: var(--text-sm); }
+.map-crew { display: grid; gap: var(--sp-2); padding: var(--sp-3); background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); }
+.map-crew-head { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-2); margin: 0; font-size: var(--text-base); }
+.map-crew-head small { font-weight: 400; font-size: var(--text-xs); }
+.map-stops { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--sp-2); }
+.map-stop { display: grid; grid-template-columns: auto 1fr; gap: var(--sp-3); align-items: start; padding: var(--sp-2); border-radius: var(--radius-sm); }
+.map-stop.is-selected { background: var(--brand-soft); }
+.map-stop-n { cursor: pointer; padding: 0; font: inherit; font-weight: 700; }
+.map-stop-n:disabled { cursor: default; opacity: 0.55; }
+.map-stop-n:focus-visible { outline: 3px solid var(--brand); outline-offset: 2px; }
+.map-stop-body { display: grid; gap: 2px; min-width: 0; }
+.map-stop-title { font-weight: 600; color: var(--ink); text-decoration: none; }
+a.map-stop-title:hover { text-decoration: underline; }
+.map-stop-meta { font-size: var(--text-sm); color: var(--muted); }
+.map-stop-warn { font-size: var(--text-sm); color: var(--bad); }
+.map-others { margin: 0; font-size: var(--text-sm); }
+
+@media (max-width: 900px) {
+  .map-layout { grid-template-columns: 1fr; height: auto; }
+  .map-main { order: -1; height: 55vh; }
+  .map-side { overflow: visible; padding-right: 0; }
+}

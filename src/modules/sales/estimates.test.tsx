@@ -39,8 +39,10 @@ beforeEach(() => localStorage.clear());
 describe("Estimate builder", () => {
   it("builds a real estimate start to finish, with the total updating on every change", async () => {
     const { tickets, estimates } = renderApp("/sales/new?ticket=1002");
-    expect(await screen.findByRole("combobox", { name: /Ticket/ })).toHaveDisplayValue(/#1002 Replace storm-damaged siding/);
-    expect(screen.getByRole("textbox", { name: /Estimate name/ })).toHaveValue("Replace storm-damaged siding");
+    // The ticket list shows "Loading tickets…" until it arrives, so wait for the picked ticket rather than the box.
+    const picker = await screen.findByRole("combobox", { name: /Ticket/ });
+    await waitFor(() => expect(picker).toHaveDisplayValue(/#1002 Replace storm-damaged siding/));
+    await waitFor(() => expect(screen.getByRole("textbox", { name: /Estimate name/ })).toHaveValue("Replace storm-damaged siding"));
     await userEvent.click(screen.getByRole("button", { name: "Start estimate" }));
 
     // Builder opens empty at $0.00.

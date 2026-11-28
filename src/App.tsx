@@ -10,6 +10,7 @@ import { memorySettings, SettingsProvider, useSettings, type SettingsBackend } f
 import { memoryTickets, TicketsProvider, type TicketsBackend } from "./core/tickets";
 import { CalendarProvider, memoryCalendar, type CalendarBackend } from "./core/calendar";
 import { CrewsProvider, memoryCrews, type CrewsBackend } from "./core/crews";
+import { GeoProvider, memoryGeo, type GeoBackend } from "./core/map";
 import { ImportProvider, memoryImport, type ImportBackend } from "./core/import";
 import { EstimatesProvider, memoryEstimates, type EstimatesBackend } from "./core/estimate";
 import { memorySignatures, SignaturesProvider, type SignatureBackend } from "./core/signature";
@@ -34,6 +35,8 @@ interface AppProps {
   crmImport?: ImportBackend;
   /** Where crews and technicians live. Preview mode uses in-memory sample crews. */
   crews?: CrewsBackend;
+  /** Turns job-site addresses into map positions. Preview mode uses fixed sample positions. */
+  geo?: GeoBackend;
   /** Where estimates and their saved versions live. Preview mode keeps them in memory. */
   estimates?: EstimatesBackend;
   /** Where email signatures live. Preview mode keeps them in memory. */
@@ -48,12 +51,13 @@ type Backends = {
   priceBook?: PriceBookBackend;
   crmImport?: ImportBackend;
   crews?: CrewsBackend;
+  geo?: GeoBackend;
   estimates?: EstimatesBackend;
   signatures?: SignatureBackend;
 };
 
-export function App({ auth = null, initialRole = "admin", settings, tickets, contacts, calendar, priceBook, crmImport, crews, estimates, signatures }: AppProps) {
-  const backends = { settings, tickets, contacts, calendar, priceBook, crmImport, crews, estimates, signatures };
+export function App({ auth = null, initialRole = "admin", settings, tickets, contacts, calendar, priceBook, crmImport, crews, geo, estimates, signatures }: AppProps) {
+  const backends = { settings, tickets, contacts, calendar, priceBook, crmImport, crews, geo, estimates, signatures };
   if (!auth) return <PreviewApp initialRole={initialRole} backends={backends} />;
   return (
     <AuthProvider client={auth}>
@@ -114,6 +118,7 @@ function WithData({ backends, user, children }: { backends: Backends; user: Curr
       priceBook: memoryPriceBook().backend,
       crmImport: memoryImport().backend,
       crews: memoryCrews().backend,
+      geo: memoryGeo().backend,
       signatures: memorySignatures().backend,
     };
   });
@@ -125,11 +130,13 @@ function WithData({ backends, user, children }: { backends: Backends; user: Curr
             <PriceBookProvider backend={backends.priceBook ?? fallback.priceBook}>
               <CrewsProvider backend={backends.crews ?? fallback.crews}>
                 <CalendarProvider backend={backends.calendar ?? fallback.calendar}>
-                  <ImportProvider backend={backends.crmImport ?? fallback.crmImport}>
-                    <EstimatesProvider backend={backends.estimates ?? fallback.estimates}>
-                      <SignaturesProvider backend={backends.signatures ?? fallback.signatures}>{children}</SignaturesProvider>
-                    </EstimatesProvider>
-                  </ImportProvider>
+                  <GeoProvider backend={backends.geo ?? fallback.geo}>
+                    <ImportProvider backend={backends.crmImport ?? fallback.crmImport}>
+                      <EstimatesProvider backend={backends.estimates ?? fallback.estimates}>
+                        <SignaturesProvider backend={backends.signatures ?? fallback.signatures}>{children}</SignaturesProvider>
+                      </EstimatesProvider>
+                    </ImportProvider>
+                  </GeoProvider>
                 </CalendarProvider>
               </CrewsProvider>
             </PriceBookProvider>

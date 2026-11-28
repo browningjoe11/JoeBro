@@ -94,7 +94,8 @@ describe("Settings", () => {
     expect(await screen.findByText(/Invite sent to pat@example.com/)).toBeInTheDocument();
     expect(mem.invites).toEqual([{ email: "pat@example.com", fullName: "Pat Painter", role: "sales" }]);
     const table = screen.getByRole("table", { name: "Team members" });
-    const row = within(table).getByText("Pat Painter").closest("tr")!;
+    // The notice shows as soon as the invite is sent; the team list reloads right after.
+    const row = (await within(table).findByText("Pat Painter")).closest("tr")!;
     expect(row).toHaveTextContent("Sales");
     expect(row).toHaveTextContent("Invite sent");
   });
