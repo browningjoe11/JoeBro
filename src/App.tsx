@@ -5,8 +5,10 @@ import { Layout, type Account } from "./core/Layout";
 import { ContactsProvider, memoryContacts, type ContactsBackend } from "./core/contacts";
 import { CurrentUserProvider, type CurrentUser } from "./core/currentUser";
 import type { Role } from "./core/modules";
+import { memoryPriceBook, PriceBookProvider, type PriceBookBackend } from "./core/pricebook";
 import { memorySettings, SettingsProvider, useSettings, type SettingsBackend } from "./core/settings";
 import { memoryTickets, TicketsProvider, type TicketsBackend } from "./core/tickets";
+import { CalendarProvider, memoryCalendar, type CalendarBackend } from "./core/calendar";
 import { MODULES, modulesFor } from "./modules/registry";
 
 interface AppProps {
@@ -20,12 +22,22 @@ interface AppProps {
   tickets?: TicketsBackend;
   /** Where customers and their properties live. Preview mode uses in-memory sample customers. */
   contacts?: ContactsBackend;
+  /** Where calendar bookings live. Preview mode uses in-memory sample bookings. */
+  calendar?: CalendarBackend;
+  /** Where the price book lives. Preview mode uses in-memory sample items. */
+  priceBook?: PriceBookBackend;
 }
 
-type Backends = { settings?: SettingsBackend; tickets?: TicketsBackend; contacts?: ContactsBackend };
+type Backends = {
+  settings?: SettingsBackend;
+  tickets?: TicketsBackend;
+  contacts?: ContactsBackend;
+  calendar?: CalendarBackend;
+  priceBook?: PriceBookBackend;
+};
 
-export function App({ auth = null, initialRole = "admin", settings, tickets, contacts }: AppProps) {
-  const backends = { settings, tickets, contacts };
+export function App({ auth = null, initialRole = "admin", settings, tickets, contacts, calendar, priceBook }: AppProps) {
+  const backends = { settings, tickets, contacts, calendar, priceBook };
   if (!auth) return <PreviewApp initialRole={initialRole} backends={backends} />;
   return (
     <AuthProvider client={auth}>
@@ -75,12 +87,18 @@ function WithData({ backends, user, children }: { backends: Backends; user: Curr
     settings: memorySettings().backend,
     tickets: memoryTickets().backend,
     contacts: memoryContacts().backend,
+    calendar: memoryCalendar().backend,
+    priceBook: memoryPriceBook().backend,
   }));
   return (
     <CurrentUserProvider user={user}>
       <SettingsProvider backend={backends.settings ?? fallback.settings} catalog={MODULES}>
         <TicketsProvider backend={backends.tickets ?? fallback.tickets}>
-          <ContactsProvider backend={backends.contacts ?? fallback.contacts}>{children}</ContactsProvider>
+          <ContactsProvider backend={backends.contacts ?? fallback.contacts}>
+            <PriceBookProvider backend={backends.priceBook ?? fallback.priceBook}>
+              <CalendarProvider backend={backends.calendar ?? fallback.calendar}>{children}</CalendarProvider>
+            </PriceBookProvider>
+          </ContactsProvider>
         </TicketsProvider>
       </SettingsProvider>
     </CurrentUserProvider>

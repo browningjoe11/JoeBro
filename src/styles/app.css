@@ -255,3 +255,44 @@ h1, h2, h3 { font-family: var(--f-display); letter-spacing: 0.01em; line-height:
   .facts { grid-template-columns: 1fr; gap: 0; }
   .facts dd { margin-bottom: var(--sp-2); }
 }
+
+/* ---------- Calendar module (S8) ---------- */
+.cal-toolbar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--sp-3); }
+.cal-nav, .cal-actions { display: flex; align-items: center; gap: var(--sp-2); flex-wrap: wrap; }
+.cal-title { margin: 0 0 0 var(--sp-2); font-size: var(--text-xl); text-transform: uppercase; }
+.cal-legend { display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-2) var(--sp-4); font-size: var(--text-sm); }
+.cal-key { display: inline-flex; align-items: center; gap: var(--sp-2); }
+.cal-count { margin-left: auto; }
+.cal-hint { flex-basis: 100%; }
+.cal-form-pair { display: grid; grid-template-columns: 1fr 1fr; gap: var(--sp-3); }
+.cal-ticket-link { margin: 0; font-size: var(--text-sm); }
+.sheet-foot .cal-delete { margin-right: auto; }
+@media (max-width: 700px) {
+  .cal-title { flex-basis: 100%; margin: var(--sp-1) 0 0; font-size: var(--text-lg); }
+  .cal-actions { width: 100%; justify-content: space-between; }
+  .cal-count { margin-left: 0; }
+}
+
+/* ---------- Price book (S1) ---------- */
+.pb-retired { align-self: flex-end; align-items: center; min-height: var(--control-h); padding: 0; }
+.pb-cell { display: grid; gap: 2px; min-width: 220px; }
+.pb-cell small { color: var(--muted); font-size: var(--text-sm); }
+.pb-name { display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-2); font-weight: 600; }
+.pb-muted { color: var(--muted); }
+.pb-price { white-space: nowrap; }
+.pb-price small { color: var(--muted); font-size: var(--text-sm); }
+.pb-note { margin: 0; padding: var(--sp-3); border-radius: var(--radius); background: var(--warn-soft); color: var(--ink); }
+.form-stack { display: grid; gap: var(--sp-4); }
+.sheet-foot .sheet-foot-left { margin-right: auto; }
+
+/* Price book picker: search box with matching items under it. */
+.picker { display: grid; gap: var(--sp-2); max-width: 560px; }
+.picker-empty { margin: 0; color: var(--muted); }
+.picker-list { list-style: none; margin: 0; padding: 0; border: 1px solid var(--line); border-radius: var(--radius); max-height: 360px; overflow-y: auto; }
+.picker-list li + li { border-top: 1px solid var(--line); }
+.picker-item { display: grid; gap: 2px; width: 100%; padding: var(--sp-2) var(--sp-3); border: 0; background: transparent; color: var(--ink); font: inherit; text-align: left; cursor: pointer; min-height: 44px; }
+.picker-item:hover, .picker-item:focus-visible { background: var(--brand-soft); }
+.picker-name { font-weight: 600; }
+.picker-meta { color: var(--muted); font-size: var(--text-sm); }
+.pb-cell .pb-phone-price { display: none; color: var(--ink); font-weight: 600; }
+@media (max-width: 600px) { .pb-cell .pb-phone-price { display: block; } .pb-cell { min-width: 200px; } }
