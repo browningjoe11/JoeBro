@@ -80,6 +80,14 @@ jobs:
           [db.seed]
           enabled = false
           TOML
+          # Use the same Postgres, Auth and Storage versions as the live project
+          # (written by "supabase link"), so the sign-in tables have the same
+          # columns as the backup.
+          mkdir -p "$WORK/supabase/.temp"
+          cp supabase/.temp/*-version "$WORK/supabase/.temp/" 2>/dev/null || true
+          for f in "$WORK"/supabase/.temp/*-version; do
+            [ -e "$f" ] && echo "$(basename "$f"): $(cat "$f")"
+          done
           supabase db start --workdir "$WORK"
 
       - name: Test restore
