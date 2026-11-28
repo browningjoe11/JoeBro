@@ -8,7 +8,7 @@ Modular operations app for Joebros Contracting Services (general contracting, Ke
 
 ## Stack
 - React 19 + TypeScript + Vite, React Router. No UI framework; plain CSS. All colors, type sizes and spacing are tokens in `src/styles/tokens.css` (light, dark, and follow-device themes). Never hardcode a color.
-- Database: Supabase Postgres. Schema is SQL in `supabase/migrations/` (new file per change, never edit an applied one), sample rows in `supabase/seed.sql` (`is_example = true`). Merging to main applies them via `.github/workflows/database.yml`. Tests run migrations in PGlite (`supabase/tests`). See `supabase/README.md`.
+- Database: Supabase Postgres. Schema is SQL in `supabase/migrations/` (new file per change, never edit an applied one), sample rows in `supabase/seed.sql` (`is_example = true`). This project does not expose new tables to the API automatically: every new table needs explicit `grant ... to authenticated` in its migration (see `20261128000000_api_grants.sql`), then RLS policies. Merging to main applies them via `.github/workflows/database.yml`. Tests run migrations in PGlite (`supabase/tests`). See `supabase/README.md`.
 - Sign-in: Supabase Auth (F4). `src/core/auth` holds the provider, sign-in screens and an `AuthClient` interface (tests use `fakeAuth`). The role comes from `profiles.role`; RLS in the database is the real gate, the menu just mirrors it. Without `VITE_SUPABASE_PUBLISHABLE_KEY` the app runs in preview mode with a "Preview as" role picker and no data. See `.env.example`.
 - Planned: Supabase Storage, Resend email, Leaflet + OpenRouteService maps, hosting on Cloudflare Pages. Keep everything on free tiers unless the owner approves a cost.
 
