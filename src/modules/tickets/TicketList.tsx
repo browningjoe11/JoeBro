@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { Icon } from "../../core/Icon";
 import { ModulePage } from "../../core/ModulePage";
 import { useCurrentUser } from "../../core/currentUser";
@@ -17,6 +17,12 @@ export function TicketList() {
   const [error, setError] = useState<string | null>(null);
   const [query, setQuery] = useState("");
   const [filter, setFilter] = usePersistentState<Filter>("jb.tickets.filter", "open");
+  // The dashboard's stage tiles link here as /tickets?show=<stage>.
+  const [params] = useSearchParams();
+  const show = params.get("show");
+  useEffect(() => {
+    if (show && (show === "open" || show === "all" || (ALL_STAGES as readonly string[]).includes(show))) setFilter(show as Filter);
+  }, [show, setFilter]);
 
   useEffect(() => {
     let live = true;
