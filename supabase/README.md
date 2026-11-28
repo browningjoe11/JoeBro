@@ -31,6 +31,18 @@ Row-level security is on for every table. What each role gets:
 
 Admins, sales and operations add and edit customers and properties. Anyone who can see a ticket can add a note to it. Switched-off accounts and visitors who aren't signed in see nothing.
 
+## Settings (chunk F5)
+
+- `company_settings`: exactly one row with the company profile (name, license number, contact details, address), the logo as a small inline image (resized to 256px in the browser, at most 300 KB, so no file storage is needed) and `disabled_modules`, the module ids an admin switched off. Settings and the dashboard can't be switched off.
+- `option_lists`: dropdown choices admins can edit (`lead_source`, `trade`). Hiding a choice (`active = false`) keeps it on old records. Labels are unique per list, ignoring case and spaces.
+- `admin_team_list()`: profiles plus invite status and last sign-in from Supabase Auth, for the Team screen. Returns nothing unless the caller is an admin.
+
+Everyone signed in and switched on can read settings; only admins change them.
+
+### Invites (edge function)
+
+`functions/invite-user` sends a Supabase invite email and sets the new person's role. It checks that the caller is an active admin, then uses the service role key that Supabase injects into every edge function (nothing to configure). Deploy or update it from the Supabase dashboard (Edge Functions → Deploy a new function → via editor, name `invite-user`, paste `functions/invite-user/index.ts`) or with `supabase functions deploy invite-user`. Supabase's built-in email sends only a few messages per hour; a custom SMTP sender (Resend, planned) lifts that.
+
 ## Sample data
 
 `seed.sql` adds four example customers and five example tickets, all marked `is_example = true`. Remove them later with:

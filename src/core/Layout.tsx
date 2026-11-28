@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { NavLink, Outlet, useLocation } from "react-router-dom";
 import { ThemePicker, useTheme } from "../ui/theme";
 import { ROLE_LABELS } from "./auth/types";
+import type { CompanySettings } from "./settings/types";
 import { Icon } from "./Icon";
 import { GROUP_LABELS, type ModuleDefinition, type ModuleGroup, type Role } from "./modules";
 
@@ -18,13 +19,15 @@ interface LayoutProps {
   account?: Account;
   /** Preview mode (no sign-in configured): pick which role to look at the app as. */
   preview?: { role: Role; onRoleChange: (role: Role) => void };
+  /** Company name and logo for the header (set in Settings). */
+  company?: Pick<CompanySettings, "name" | "logoDataUrl">;
 }
 
 /**
  * App frame. On a PC the sidebar is always visible and can be narrowed to
  * icons; on phones and tablets it slides in from a menu button.
  */
-export function Layout({ modules, account, preview }: LayoutProps) {
+export function Layout({ modules, account, preview, company }: LayoutProps) {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [narrow, setNarrow] = useState(() => readNarrow());
   const location = useLocation();
@@ -42,6 +45,7 @@ export function Layout({ modules, account, preview }: LayoutProps) {
   }, [narrow]);
 
   const groups = groupModules(modules);
+  const { first, rest } = splitName(company?.name || "Joebros Contracting Services");
 
   return (
     <div className={`shell${narrow ? " shell--narrow" : ""}${drawerOpen ? " shell--drawer" : ""}`}>
@@ -51,9 +55,14 @@ export function Layout({ modules, account, preview }: LayoutProps) {
 
       <aside className="sidebar" aria-label="Main menu">
         <div className="brand">
-          <span className="brand-mark" aria-hidden="true" />
-          <span className="brand-name">
-            Joebros<small>Contracting Services</small>
+          {company?.logoDataUrl ? (
+            <img className="brand-logo" src={company.logoDataUrl} alt="" />
+          ) : (
+            <span className="brand-mark" aria-hidden="true" />
+          )}
+          <span className="brand-name" data-testid="brand-name">
+            {first}
+            {rest && <small>{rest}</small>}
           </span>
           <button className="icon-btn drawer-close" onClick={() => setDrawerOpen(false)} aria-label="Close menu">
             <Icon name="close" />
@@ -96,7 +105,7 @@ export function Layout({ modules, account, preview }: LayoutProps) {
           <button className="icon-btn menu-btn" onClick={() => setDrawerOpen(true)} aria-label="Open menu" aria-expanded={drawerOpen}>
             <Icon name="menu" />
           </button>
-          <span className="topbar-title">Joebros</span>
+          <span className="topbar-title">{first}</span>
           <div className="topbar-tools">
             <ThemePicker theme={theme} onChange={setTheme} />
             {preview && (
@@ -193,4 +202,10 @@ function readNarrow() {
   } catch {
     return false;
   }
+}
+
+/** "Joebros Contracting Services" shows as a big "Joebros" over a small "Contracting Services". */
+function splitName(name: string) {
+  const [first, ...rest] = name.trim().split(/\s+/);
+  return { first, rest: rest.join(" ") };
 }
