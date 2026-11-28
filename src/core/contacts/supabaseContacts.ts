@@ -3,6 +3,7 @@ import type { Stage } from "../tickets";
 import { displayName, normalizeEmail, normalizePhone } from "./match";
 import type {
   Contact,
+  ContactChange,
   ContactEvent,
   ContactInput,
   ContactMethod,
@@ -201,6 +202,24 @@ export function supabaseContacts(sb: SupabaseClient): ContactsBackend {
           ticketTitle: s(t.title),
         };
       });
+    },
+
+    async changes(contactId) {
+      const { data, error } = await sb
+        .from("contact_changes")
+        .select("id, contact_id, property_id, actor_id, changes, created_at")
+        .eq("contact_id", contactId)
+        .order("created_at", { ascending: false })
+        .limit(200);
+      fail(error);
+      return ((data ?? []) as Row[]).map<ContactChange>((r) => ({
+        id: s(r.id),
+        contactId: s(r.contact_id),
+        propertyId: (r.property_id as string) ?? null,
+        actorId: (r.actor_id as string) ?? null,
+        changes: (r.changes as ContactChange["changes"]) ?? {},
+        createdAt: s(r.created_at),
+      }));
     },
 
     async findDuplicates(probe, excludeId) {
