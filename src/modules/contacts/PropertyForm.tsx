@@ -24,8 +24,11 @@ export function PropertyFields({
           label="City"
           value={value.city}
           error={errors.city}
-          onChange={(e) => set("city", e.target.value)}
-          onBlur={() => !value.county && onChange({ ...value, county: guessCounty(value.city) })}
+          onChange={(e) => {
+            // Fill the county from the city, unless someone picked one by hand.
+            const auto = !value.county || value.county === guessCounty(value.city);
+            onChange({ ...value, city: e.target.value, county: auto ? guessCounty(e.target.value) : value.county });
+          }}
           autoComplete="off"
         />
       </div>

@@ -77,8 +77,7 @@ describe("customer page", () => {
     await userEvent.type(within(sheet).getByRole("textbox", { name: "Name" }), "Beach house");
     await userEvent.type(within(sheet).getByRole("textbox", { name: "Street address" }), "5 Ocean Dr");
     await userEvent.type(within(sheet).getByRole("textbox", { name: "City" }), "Lewes");
-    await userEvent.tab();
-    expect(within(sheet).getByRole("combobox", { name: "County" })).toHaveValue("Sussex");
+    await waitFor(() => expect(within(sheet).getByRole("combobox", { name: "County" })).toHaveValue("Sussex"));
     await userEvent.click(within(sheet).getByRole("checkbox", { name: /Main property/ }));
     await userEvent.click(within(sheet).getByRole("button", { name: "Save" }));
     await waitFor(() => expect(screen.queryByRole("dialog")).not.toBeInTheDocument());
