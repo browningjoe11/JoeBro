@@ -9,6 +9,7 @@ import { memoryPriceBook, PriceBookProvider, type PriceBookBackend } from "./cor
 import { memorySettings, SettingsProvider, useSettings, type SettingsBackend } from "./core/settings";
 import { memoryTickets, TicketsProvider, type TicketsBackend } from "./core/tickets";
 import { CalendarProvider, memoryCalendar, type CalendarBackend } from "./core/calendar";
+import { ImportProvider, memoryImport, type ImportBackend } from "./core/import";
 import { MODULES, modulesFor } from "./modules/registry";
 
 interface AppProps {
@@ -26,6 +27,8 @@ interface AppProps {
   calendar?: CalendarBackend;
   /** Where the price book lives. Preview mode uses in-memory sample items. */
   priceBook?: PriceBookBackend;
+  /** Where an old-CRM import is checked and saved. Preview mode keeps it in memory. */
+  crmImport?: ImportBackend;
 }
 
 type Backends = {
@@ -34,10 +37,11 @@ type Backends = {
   contacts?: ContactsBackend;
   calendar?: CalendarBackend;
   priceBook?: PriceBookBackend;
+  crmImport?: ImportBackend;
 };
 
-export function App({ auth = null, initialRole = "admin", settings, tickets, contacts, calendar, priceBook }: AppProps) {
-  const backends = { settings, tickets, contacts, calendar, priceBook };
+export function App({ auth = null, initialRole = "admin", settings, tickets, contacts, calendar, priceBook, crmImport }: AppProps) {
+  const backends = { settings, tickets, contacts, calendar, priceBook, crmImport };
   if (!auth) return <PreviewApp initialRole={initialRole} backends={backends} />;
   return (
     <AuthProvider client={auth}>
@@ -89,6 +93,7 @@ function WithData({ backends, user, children }: { backends: Backends; user: Curr
     contacts: memoryContacts().backend,
     calendar: memoryCalendar().backend,
     priceBook: memoryPriceBook().backend,
+    crmImport: memoryImport().backend,
   }));
   return (
     <CurrentUserProvider user={user}>
@@ -96,7 +101,9 @@ function WithData({ backends, user, children }: { backends: Backends; user: Curr
         <TicketsProvider backend={backends.tickets ?? fallback.tickets}>
           <ContactsProvider backend={backends.contacts ?? fallback.contacts}>
             <PriceBookProvider backend={backends.priceBook ?? fallback.priceBook}>
-              <CalendarProvider backend={backends.calendar ?? fallback.calendar}>{children}</CalendarProvider>
+              <CalendarProvider backend={backends.calendar ?? fallback.calendar}>
+                <ImportProvider backend={backends.crmImport ?? fallback.crmImport}>{children}</ImportProvider>
+              </CalendarProvider>
             </PriceBookProvider>
           </ContactsProvider>
         </TicketsProvider>

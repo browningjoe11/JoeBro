@@ -17,6 +17,7 @@ const PATHS = {
   next: "M9 6l6 6-6 6",
   calendar: "M8 3v4M16 3v4M4 10h16M5 5h14a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1M8 14h2M14 14h2M8 17h2",
   pricebook: "M20.6 13.4l-7.2 7.2a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8zM7.5 7.5h.01",
+  import: "M12 3v9M8.5 8.5L12 12l3.5-3.5M5 15v4a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-4",
 } as const;
 
 export type IconName = keyof typeof PATHS;

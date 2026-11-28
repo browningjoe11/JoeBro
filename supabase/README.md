@@ -54,6 +54,18 @@ Everyone signed in and switched on can read settings; only admins change them.
 
 Admins, sales and operations see, add, move and delete bookings. Reviewers see them all. Technicians see only bookings assigned to them or on their tickets.
 
+## Import from the old CRM (chunk F8)
+
+The old Joebros CRM is a single-page Claude artifact. Its customers are not in this database until an admin uploads an export on the Import screen.
+
+- Preferred file: `joebros-crm-export.json` with `format` `joebros-crm-export`, `version` 1, `contacts` (properties nested on each customer) and `tickets` (notes nested on each job). The importer also accepts common names (`customers`, `jobs`, `status`, a single full name, a one-line address).
+- A CSV with a header row works too. One row can be one job, with the customer's name, phone, email and address on that same row, or `record_type` can be `contact`, `property`, `ticket` or `note`.
+- Rows created by the import are tagged `import_source = 'joebros-crm'` and `import_key` (the id from the file). `import_links` remembers when a file row matched a customer who was already here, by normalized phone or else by email. Loading the same file again adds nothing.
+- An imported job may start at whatever stage it is actually in. A job created in this app still has to start at lead, site visit or estimating. Only an admin can set the import tag.
+- Dry run previews the counts and the skipped rows and writes nothing.
+
+The artifact's data lives in Claude artifact storage (or that browser, if the page saved it locally). Download it from the artifact's Export or Backup button before unpublishing the artifact. The Import screen has the field list and an example file of fake customers.
+
 ## Sample data
 
 `seed.sql` adds four example customers, five example tickets and five calendar bookings in the current week, all marked `is_example = true`. Remove them later with:

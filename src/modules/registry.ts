@@ -9,6 +9,7 @@ import { onsiteModule } from "./onsite";
 import { reviewModule } from "./review";
 import { invoicingModule } from "./invoicing";
 import { priceBookModule } from "./price-book";
+import { importModule } from "./import";
 import { settingsModule } from "./settings";
 import { styleguideModule } from "./styleguide";
 
@@ -24,6 +25,7 @@ export const MODULES: readonly ModuleDefinition[] = [
   reviewModule,
   invoicingModule,
   priceBookModule,
+  importModule,
   settingsModule,
   styleguideModule,
 ];
